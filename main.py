@@ -20,9 +20,10 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import (QCoreApplication, QPropertyAnimation, QDate, QDateTime, QMetaObject, QObject, QPoint, QRect, QSize, QTime, QUrl, Qt, QEvent)
 from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
-
 # GUI FILE
 from app_modules import *
+import fast_autocomplete
+import Levenshtein
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -43,9 +44,10 @@ class MainWindow(QMainWindow):
         ## ==> END ##
 
         ## SET ==> WINDOW TITLE
-        self.setWindowTitle('GPlay')
-        UIFunctions.labelTitle(self, 'Gplay')
-        UIFunctions.labelDescription(self, 'Set text')
+        self.setWindowTitle('Deltaplayer')
+        self.setWindowIcon(QtGui.QIcon(':/16x16/icons/logo.png'))
+        UIFunctions.labelTitle(self, 'Deltaplayer')
+        UIFunctions.labelDescription(self, '')
         ## ==> END ##
 
         ## WINDOW SIZE ==> DEFAULT SIZE
@@ -79,7 +81,7 @@ class MainWindow(QMainWindow):
         ## ==> END ##
 
         ## USER ICON ==> SHOW HIDE
-        UIFunctions.userIcon(self, "WM", "", True)
+        UIFunctions.userIcon(self, "ED", "", True)
         ## ==> END ##
 
 
@@ -222,6 +224,7 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+
     app = QApplication(sys.argv)
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeui.ttf')
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeuib.ttf')

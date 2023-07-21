@@ -939,9 +939,13 @@ class GameManager():
                 h = file.read()
             return json.loads(h)
         except Exception as e:
+            with open(path.join(self.fm.user_data_dir,"gameDb.json"), 'wb') as f:
+                f.write(requests.get("https://raw.githubusercontent.com/elycraft/musicplayer/main/gameDb.json").content)
             print(e)
-            print("BIG ERROR : NO GAME DB !!!")
-            return []
+            print("Downloaded gameDb.")
+            with open(path.join(self.fm.user_data_dir,"gameDb.json"),"r") as file:
+                h = file.read()
+            return json.loads(h)
         
     def load(self):
         try:
@@ -1102,7 +1106,7 @@ class DetectorManager(QObject):
             while True:
                 time.sleep(0)
                 if self.interrupt: break
-                time.sleep(1)
+                time.sleep(10)
                 r = self.verifier_jeu(self.gm.games)
                 if len(r) == 0: continue
                 for g in r:

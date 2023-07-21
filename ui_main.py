@@ -501,7 +501,7 @@ class Ui_MainWindow(object):
         self.frame_icon_top_bar = QtWidgets.QFrame(self.frame_label_top_btns)
         self.frame_icon_top_bar.setMaximumSize(QtCore.QSize(30, 30))
         self.frame_icon_top_bar.setStyleSheet("background: transparent;\n"
-"background-image: url(:/16x16/icons/16x16/cil-terminal.png);\n"
+"border-image:url(:/16x16/icons/delta.png) 0 0 0 0 stretch stretch;\n"
 "background-position: center;\n"
 "background-repeat: no-repeat;\n"
 "")
@@ -772,7 +772,6 @@ class Ui_MainWindow(object):
         self.playlistEditImage.setStyleSheet("background-color: rgb(39, 44, 54);\n"
 " border-radius: 15px;")
         self.playlistEditImage.setText("")
-        self.playlistEditImage.setPixmap(QtGui.QPixmap(":/16x16/icons/gplay_no-image.svg"))
         self.playlistEditImage.setScaledContents(True)
         self.playlistEditImage.setAlignment(QtCore.Qt.AlignCenter)
         self.playlistEditImage.setObjectName("playlistEditImage")
@@ -1606,7 +1605,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.btn_minimize, self.btn_maximize_restore)
         MainWindow.setTabOrder(self.btn_maximize_restore, self.btn_close)
@@ -1624,7 +1623,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label_title_bar_top.setText(_translate("MainWindow", "GPlay"))
+        self.label_title_bar_top.setText(_translate("MainWindow", "Deltaplayer"))
         self.btn_minimize.setToolTip(_translate("MainWindow", "Minimize"))
         self.btn_maximize_restore.setToolTip(_translate("MainWindow", "Maximize"))
         self.btn_close.setToolTip(_translate("MainWindow", "Close"))
@@ -1703,8 +1702,8 @@ class Ui_MainWindow(object):
         self.tableWidget.setSortingEnabled(__sortingEnabled)
         self.MusicName.setText(_translate("MainWindow", "MusicName"))
         self.Bar.setFormat(_translate("MainWindow", "25:25"))
-        self.label_credits.setText(_translate("MainWindow", "GPlay by Elydev"))
-        self.label_version.setText(_translate("MainWindow", "v1.0.0"))
+        self.label_credits.setText(_translate("MainWindow", "Deltaplayer by Elydev"))
+        self.label_version.setText(_translate("MainWindow", "vB1.0.0"))
 import files_rc
 
 

@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="16x16">
+    <file>icons/logo.png</file>
+    <file>icons/delta.png</file>
     <file>icons/gplay_no-image.svg</file>
     <file>icons/gplay_rewind.svg</file>
     <file>icons/gplay_skip.svg</file>
