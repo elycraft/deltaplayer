@@ -1,0 +1,13 @@
+[{
+    "name": "Assetto Corsa",
+    "img": "https://image.api.playstation.com/cdn/EP4040/CUSA01797_00/NMcAucyANMnYMNkz6V5vk9f5YXty2mCz.png",
+    "proc": "acs.exe"
+}, {
+    "name": "BeamNG.drive",
+    "img": "https://upload.wikimedia.org/wikipedia/en/6/6c/BeamNGdrive_cover.png",
+    "proc": "beamng.drive.exe"
+}, {
+    "name": "Cities Skyline ",
+    "img": "https://cdn-bnplf.nitrocdn.com/PnTamyYWaToimYiFMSaQnRpmLLjgNHjT/assets/images/optimized/rev-c39bcbb/images/games/5632182/cities-skylines-desktop-logo-all.jpg",
+    "proc": "cities.exe"
+}]

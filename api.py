@@ -3,10 +3,16 @@ import subprocess
 import os
 import time
 import pafy
+from PySide2.QtCore import QObject, Signal
 
-class Player():
+class Player(QObject):
 
-    def __init__(self,caller,caller2) -> None:
+    update = Signal(int)
+    updateTime = Signal(int)
+
+
+    def __init__(self) -> None:
+        QObject.__init__(self)
         self.playing = False
         self.paused = False
         self.startTime = None
@@ -14,10 +20,10 @@ class Player():
         self.process = None
         self.interrupt = False
         self.current = None
-        self.update = caller
-        self.updateTime = caller2
+        
         self.time = (0,0)
         self.sound = 99
+        self.backQueue = []
 
     def sendToMpv(self,cmd):
         os.system(f'echo {cmd} >\\\.\pipe\mpvsocket')
@@ -58,13 +64,15 @@ class Player():
         def worker():
             self.interrupt = False
             while True:
+                time.sleep(0)
                 if len(self.queue)==0:
                     if self.interrupt: break
                     continue
-                time.sleep(0.5)
+                
                 self.current = self.queue[0]
+                self.backQueue.append(self.current)
                 del self.queue[0]
-                self.update()
+                self.update.emit(1)
                 self.play(self.current.get_url())
                 self.current = None
                 #self.update()
@@ -76,6 +84,7 @@ class Player():
         def worker():
             self.interrupt = False
             while True:
+                time.sleep(0)
                 if self.paused:
                     if self.interrupt or self.playing==False: break
                     continue
@@ -84,7 +93,7 @@ class Player():
                 try:t2 = t1*100/self.current.duration
                 except:t2 = 0
                 self.time=(t1,t2)
-                self.updateTime()
+                self.updateTime.emit(1)
                 if self.interrupt or self.playing==False: break
             self.time=(0,0)
         t = threading.Thread(target=worker)
@@ -97,22 +106,24 @@ class Player():
             self.queue.append(element)
     
     def addAndPlay(self,element):
-        self.stopPlayQueue()
+        self.clearQueue()
         if type(element) == type([]):
             self.queue += element
         else:
             self.queue = [element] + self.queue
-        time.sleep(0.5)
-        self.playQueue()      
+        time.sleep(0.5)   
     
     def stopPlayQueue(self):
         self.interrupt = True
         self.stop()
+
+    def clearQueue(self):
+        self.queue = []
+        self.stop()
     
     def skip(self):
-        self.stopPlayQueue()
-        time.sleep(0.5)
-        self.playQueue()  
+        self.stop()
+        time.sleep(0.5) 
 
     def setSound(self):
         self.sendToMpv("""{ "command": ["set_property","volume","""+str(self.sound)+"""] }""")
@@ -125,16 +136,20 @@ class YtMusic:
 
     def __init__(self,furl=None,data=None) -> None:
         if data:
+            self.id = data["id"]
             self.furl = data["furl"]
             self.title = data["title"]
             self.duration = data["length"]
             self.thumb = data["thumb"]
+            self.author = data["author"]
         else:
             video = pafy.new(furl)
+            self.id = video.videoid
             self.furl = furl
             self.title = video.title
             self.duration = video.length
             self.thumb = video.thumb
+            self.author = video.author
 
     def __repr__(self):
         return self.title
@@ -146,7 +161,7 @@ class YtMusic:
         return self.url.url
     
     def save(self):
-        return {"furl":self.furl,"title":self.title,"length":self.duration,"thumb":self.thumb}
+        return {"id":self.id,"furl":self.furl,"title":self.title,"length":self.duration,"thumb":self.thumb,"author":self.author}
 
 class Playlist():
 
@@ -160,32 +175,7 @@ class Playlist():
 
 
 if __name__ == "__main__":        
-    p = Player()
+    p = Player("","")
     #p.sendToMpv('''{ "command": ["stop"] }''')
 
-    p.addToQueue(YtMusic("https://www.youtube.com/watch?v=sgKK0YRQyMQ"))
-    p.addToQueue(YtMusic("https://www.youtube.com/watch?v=GDoiNIg28jg"))
-
-    while True:
-        print("A - Add to queue\nS - Stop playing queue\nP - Start playing queue\nD - Direct play")
-        j = input("> ")
-        j = j.lower()
-        if j == "a":
-            j = input("> ")
-            p.addToQueue(YtMusic(j))
-        if j == "s":
-            p.stopPlayQueue()
-        if j == "p":
-            p.pause()
-        if j == "z":
-            p.playQueue()
-        if j == "d":
-            j = input("> ")
-            p.addAndPlay(YtMusic(j))
-        if j == "q":
-            p.stopPlayQueue()
-            break
-        if j == "n":
-            p.skip()
-        print(len(p.queue),p.queue,len(p.queue))
-    
+    p.sendToMpv('''{ "command": ["stop"] }''')

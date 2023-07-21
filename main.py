@@ -149,14 +149,14 @@ class MainWindow(QMainWindow):
 
         # PAGE Playlists
         if btnWidget.objectName() == "btn_playlists":
-            self.ui.stackedWidget.setCurrentWidget(self.ui.page_home)
+            self.ui.stackedWidget.setCurrentWidget(self.ui.page_playlists)
             UIFunctions.resetStyle(self, "btn_playlists")
             UIFunctions.labelPage(self, "My Playlists")
             btnWidget.setStyleSheet(UIFunctions.selectMenu(btnWidget.styleSheet()))
 
         # PAGE Games
         if btnWidget.objectName() == "btn_games":
-            self.ui.stackedWidget.setCurrentWidget(self.ui.page_home)
+            self.ui.stackedWidget.setCurrentWidget(self.ui.page_games)
             UIFunctions.resetStyle(self, "btn_games")
             UIFunctions.labelPage(self, "My Games")
             btnWidget.setStyleSheet(UIFunctions.selectMenu(btnWidget.styleSheet()))
@@ -227,11 +227,13 @@ if __name__ == "__main__":
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeuib.ttf')
     window = MainWindow()
     
-    fm = FileManager()
-    playBar = PlayBarManager(window.ui)
+    settingM = SettingManager()
+    playBar = PlayBarManager(window.ui,settingM)
     playlistM = PlaylistManager(window.ui,playBar.mp)
+    gameM = GameManager(window.ui,playlistM)
+    detectorM = DetectorManager(gameM,playlistM,playBar)
     
-    exitM = ExitProgram([playBar,playlistM])
+    exitM = ExitProgram([playBar,playlistM,settingM,gameM,detectorM])
 
     app.aboutToQuit.connect(exitM.appExit)
     sys.exit(app.exec_())

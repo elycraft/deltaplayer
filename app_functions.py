@@ -19,21 +19,46 @@ from main import *
 import api
 from time import strftime, gmtime
 from PySide2 import QtCore, QtGui, QtWidgets
-import requests
+from PySide2.QtGui import QDrag
+from PySide2.QtCore import QMimeData
+from PySide2.QtCore import Qt
 import json
-from appdata import AppDataPaths
+from platformdirs import *
+from os import path
+import os
+import requests
+from cdialog import CdialogWin
+import hashlib
+from fast_autocomplete import AutoComplete
+import time
+import detector
+import threading
 
 
+
+def remove_non_ascii(s):
+    return "".join(c for c in s if ord(c)<128)
+
+def maxlen(s,l):
+    if len(s)>l:
+        tm = l-len(s)
+        s = s[:tm]+"..."
+    return s
 
 class Functions(MainWindow):
     pass
 
 class PlayBarManager():
 
-    def __init__(self,ui) -> None:
+    def __init__(self,ui,sm) -> None:
         self.ui = ui
+        self.sm = sm
+        self.il = ImageLoader()
 
-        self.mp = api.Player(self.updateUi,self.updateTime)
+        
+        self.mp = api.Player()
+        self.mp.update.connect(self.updateUi)
+        self.mp.updateTime.connect(self.updateTime)
         self.mp.playQueue()
 
         self.ui.btn_rewind.clicked.connect(lambda: self.btnRewind())
@@ -42,7 +67,7 @@ class PlayBarManager():
 
         self.soundSlider = self.ui.soundSlider
         self.soundSlider.valueChanged.connect(self.sliderSound)
-        self.soundSlider.setValue(50)
+        self.soundSlider.setValue(sm.settings["volume"])
 
         self.updateTime()
         self.updateUi()
@@ -57,13 +82,15 @@ class PlayBarManager():
         self.mp.pause()
 
     def btnRewind(self):
-        self.mp.addToQueue(api.YtMusic("https://www.youtube.com/watch?v=ItBOHxAOgYc"))
+        self.mp.addAndPlay(self.mp.backQueue[-2])
+        del(self.mp.backQueue[-2])
 
     def btnSkip(self):
         print("Skip")
         self.mp.skip()
     
     def sliderSound(self):
+        self.sm.settings["volume"] = self.soundSlider.value()
         self.mp.updateSound(self.soundSlider.value())
     
     def updateTime(self):
@@ -75,81 +102,149 @@ class PlayBarManager():
         self.ui.Bar.setValue(self.mp.time[1])
     
     def updateUi(self):
-        try: self.ui.MusicName.setText(str(self.mp.current.title)) 
-        except: self.ui.MusicName.setText(str(""))
+        try: self.ui.MusicName.setText(maxlen(str(self.mp.current.title),50))
+        except: self.ui.MusicName.setText("")
         try:
-            image = QtGui.QImage()
-            image.loadFromData(requests.get(self.mp.current.thumb).content)
-            self.ui.MusicPoster.setPixmap(QPixmap(image))
-            print(self.mp.current.thumb)
+            image = self.il.get(self.mp.current.thumb)
+            self.ui.MusicPoster.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{image}") 10 10 10 10""")
         except Exception as e:
             print(e)
-            self.ui.MusicPoster.setPixmap(QtGui.QPixmap())
-
-
-
+            image = self.il.get("https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/A_black_image.jpg/640px-A_black_image.jpg")
+            self.ui.MusicPoster.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{image}") 0 0 0 0 stretch stretch""")
 
 class PlaylistManager():
 
     def __init__(self,ui,mp) -> None:
+
+        self.fm = FileManager()
         self.ui = ui
         self.raw_playlists = self.load()
         self.playlists = []
         self.mp = mp
+        self.mapping = {}
+
+        self.ui.playlistEditList = CustomListWidget(self.ui.verticalFrame1,wid=DraggableItem)
+        self.ui.playlistEditList.setDragDropMode(QListWidget.InternalMove)
+        self.ui.playlistEditList.setSelectionMode(QListWidget.ExtendedSelection)
+
+        self.ui.playlistEditList.setStyleSheet("border: 0px")
+        self.ui.playlistEditList.setObjectName("playlistEditList")
+        self.ui.verticalLayout_17.addWidget(self.ui.playlistEditList)
+
+        self.scrollArea = QtWidgets.QScrollArea(self.ui.page_playlists)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setStyleSheet("border-radius: 0px;")
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.gridLayoutPlay = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.ui.verticalLayout_10.addWidget(self.scrollArea)
+
+        self.nextPos = [0,0]
+
+        self.addBtnAdd()
 
         self.drawPlaylists()
+
+    def addBtnAdd(self):
+        self.AddPlaylist = QtWidgets.QFrame(self.scrollArea)
+        self.AddPlaylist.setMaximumSize(QtCore.QSize(150, 150))
+        self.AddPlaylist.setStyleSheet("background-color: rgb(39, 44, 54);\n"
+        " border-radius: 15px;")
+        self.AddPlaylist.setObjectName("AddPlaylist")
+        self.AddPlaylistLayout = QtWidgets.QVBoxLayout(self.AddPlaylist)
+        self.AddPlaylistLayout.setObjectName("AddPlaylistLayout")
+        self.btn_addplaylist = QtWidgets.QPushButton(self.AddPlaylist)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setBold(True)
+        font.setWeight(75)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btn_addplaylist.sizePolicy().hasHeightForWidth())
+        self.btn_addplaylist.setSizePolicy(sizePolicy)
+        self.btn_addplaylist.setFont(font)
+        self.btn_addplaylist.setObjectName("btn_addplaylist")
+        self.btn_addplaylist.setText("Add a Playlist")
+        self.AddPlaylistLayout.addWidget(self.btn_addplaylist)
+        self.gridLayoutPlay.addWidget(self.AddPlaylist, 0, 0)
+        self.btn_addplaylist.clicked.connect(lambda : self.newPlaylist())
         
     
     def save(self):
         self.raw_playlists = []
         for pl in self.playlists:
             self.raw_playlists.append(pl.save())
-        with open("playlists.json","w") as file:
+        with open(path.join(self.fm.user_data_dir,"playlists.json"),"w") as file:
             file.write(json.dumps(self.raw_playlists))
     
     def load(self):
         try:
-            with open("playlists.json","r") as file:
+            with open(path.join(self.fm.user_data_dir,"playlists.json"),"r") as file:
                 h = file.read()
             return json.loads(h)
         except:
-            with open("playlists.json","w") as file:
+            with open(path.join(self.fm.user_data_dir,"playlists.json"),"w") as file:
                 file.write(json.dumps([]))
             return []
         
     def drawPlaylists(self):
+        
         for pl in self.raw_playlists:
-            n = PlaylistItem(pl["name"],pl["musics"],pl["thumb"],self.ui.gridLayout_3,self.ui.gridFrame,self.mp)
+            n = PlaylistItem(pl["name"],pl["musics"],pl["thumb"],pl["plid"],self.gridLayoutPlay,self.scrollArea,self.mp,self.ui,self)
             self.playlists.append(n)
+            self.mapping[pl["plid"]] = n
             self.playlists[-1].create()
+        
 
     def appExit(self):
         print("Exiting Playlist Manager")
         self.save()
             
         
-    def newPlaylist(self,name,musics):
-        pl = ""
+    def newPlaylist(self):
+        n = PlaylistItem("New Playlist",[],"https://d1csarkz8obe9u.cloudfront.net/posterpreviews/lo-fi-car-dashboard-album-song-cover-art-design-template-683f268e5d3f08906caef3ac37efc21a_screen.jpg",str(time.time()),self.gridLayoutPlay,self.scrollArea,self.mp,self.ui,self)
+        self.playlists.append(n)
+        self.playlists[-1].create()
+        self.playlists[-1].modify()
+
+    def getNewPos(self):
+        maxcol = 5
+        self.nextPos[0]+=1
+        if self.nextPos[0] > maxcol:
+            self.nextPos[0] = 0
+            self.nextPos[1] += 1
+        return self.nextPos
 
 class PlaylistItem():
 
-    def __init__(self,name,musics,thumb, layout,gridFrame,mp) -> None:
+    def __init__(self,name,musics,thumb,plid,layout,gridFrame,mp,ui,parent) -> None:
         self.nameI = name
-        self.thumbI = thumb
         self.musicsI = self.getRealPlaylist(musics)
+        self.plid = plid
         self.layout = layout
         self.gridFrame = gridFrame
         self.process = []
         self.mp = mp
+        self.ui = ui
+        self.pere = parent
+        self.fm = FileManager()
+        self.il = ImageLoader(self.fm)
+        self.thumbI = thumb
+        self.thumbUrl = self.il.get(self.thumbI)
+        
+
+            
 
     def create(self):
         self.PlaylistTemplate = QtWidgets.QFrame(self.gridFrame)
         self.PlaylistTemplate.setMaximumSize(QtCore.QSize(150, 150))
+        self.PlaylistTemplate.setMinimumSize(QtCore.QSize(150, 150))
         self.PlaylistTemplate.setStyleSheet("\n"
         "#PlaylistTemplate {\n"
         "  background-color: rgb(39, 44, 54);\n"
         "  border-radius: 15px;\n"
-        "  border-image: url(https://www.adobe.com/fr/express/create/cover/media_1a06c14de66bef800d4fb40eaa2caeadc66eed471.jpeg) 0 0 0 0 stretch stretch;\n"
+        '  border-image: url("'+self.thumbUrl+'") 0 0 0 0 stretch stretch;\n'
         "  background-repeat: no-reperat;\n"
         "  border: none;\n"
         "}")
@@ -177,7 +272,7 @@ class PlaylistItem():
         self.optionLayout.setObjectName("optionLayout")
         self.plname = QtWidgets.QLabel(self.options)
         font = QtGui.QFont()
-        font.setPointSize(7)
+        font.setPointSize(8)
         font.setBold(True)
         font.setWeight(75)
         self.plname.setFont(font)
@@ -204,26 +299,482 @@ class PlaylistItem():
         self.modifyPlaylist.setObjectName("modifyPlaylist")
         self.optionLayout.addWidget(self.modifyPlaylist)
         self.verticalLayout_13.addWidget(self.options)
-        self.layout.addWidget(self.PlaylistTemplate, 0, 0, 1, 1)
+
+        pos = self.pere.getNewPos()
+
+        self.layout.addWidget(self.PlaylistTemplate, pos[1], pos[0])
 
         self.thumb.clicked.connect(lambda: self.play())
+        self.modifyPlaylist.clicked.connect(lambda:self.modify())
         self.plname.setText(self.nameI)
+        
 
     def getRealPlaylist(self,fromjson):
         return [api.YtMusic(data=x) for x in fromjson]
     
     def save(self):
-        return {"name":self.nameI,"musics":[x.save() for x in self.musicsI],"thumb":self.thumbI}
+        return {"name":self.nameI,"musics":[x.save() for x in self.musicsI],"thumb":self.thumbI,"plid":self.plid}
 
     def play(self):
-        self.mp.addToQueue(self.musicsI)
+        self.mp.addAndPlay(self.musicsI)
+    
+    def modify(self):
 
+        try:
+            self.ui.playlistEditName.textChanged.disconnect() 
+            self.ui.playlistEditList.model().rowsMoved.disconnect() 
+            self.ui.playlistEditAdd.clicked.disconnect() 
+            self.ui.playlistEditChangeImage.clicked.disconnect() 
+            self.ui.playlistEditDelete.clicked.disconnect() 
+            self.ui.playlistEditList.removeListener()
+        except Exception as e:
+            print(e)
         
+        self.ui.playlistEditName.textChanged.connect(self.getNewName)
+        self.ui.playlistEditList.model().rowsMoved.connect(self.updateList)
+        self.ui.playlistEditAdd.clicked.connect(lambda: self.handlerNM())
+        self.ui.playlistEditChangeImage.clicked.connect(lambda: self.handlerCI())
+        self.ui.playlistEditDelete.clicked.connect(lambda: self.delete(self))
+        self.ui.playlistEditList.addListener(self.updateList)
+        
+
+
+        self.ui.playlistEditList.clear()
+        self.ui.playlistEditName.setText(self.nameI)
+        self.ui.playlistEditImage.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{self.thumbUrl}") 0 0 0 0 stretch stretch""")
+
+        for m in self.musicsI:
+            item = QtWidgets.QListWidgetItem(self.ui.playlistEditList)
+            item.setData(QtCore.Qt.UserRole, (m,m.title, m.author, self.il.get(m.thumb)))
+            self.ui.playlistEditList.addItem(item)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.page_editPlaylist)
+
+    def getNewName(self,text):
+        self.nameI = text
+        self.plname.setText(text)
+
+    def updateList(self):
+        self.musicsI = self.ui.playlistEditList.getNewList()
+
+    def handlerNM(self):
+        self.ui.playlistEditAdd.setEnabled(False)
+        QtCore.QTimer.singleShot(100, lambda: self.ui.playlistEditAdd.setDisabled(False))
+        CdialogWin(self.getNewMusic).setTxt("Please give a Youtube url to add to the playlist (This can took a while !) : ")
+
+    def handlerCI(self):
+        self.ui.playlistEditChangeImage.setEnabled(False)
+        QtCore.QTimer.singleShot(100, lambda: self.ui.playlistEditChangeImage.setDisabled(False))
+        CdialogWin(self.getNewImage).setTxt("Please give a image url for the new thumbnail : ")
+
+    def getNewMusic(self,msg):
+        ok = msg["user"]
+        text = msg["msg"]
+        if ok:
+            m = api.YtMusic(text)
+            self.musicsI.append(m)
+            item = QtWidgets.QListWidgetItem(self.ui.playlistEditList)
+            item.setData(QtCore.Qt.UserRole, (m,m.title, m.author, m.thumb))
+            self.ui.playlistEditList.addItem(item)
+
+    def getNewImage(self,msg):
+        ok = msg["user"]
+        text = msg["msg"]
+        if ok:
+            self.thumbI = text
+            self.thumbUrl = self.il.get(self.thumbI)
+
+            self.PlaylistTemplate.setStyleSheet("\n"
+            "#PlaylistTemplate {\n"
+            "  background-color: rgb(39, 44, 54);\n"
+            "  border-radius: 15px;\n"
+            '  border-image: url("'+self.thumbUrl+'") 0 0 0 0 stretch stretch;\n'
+            "  background-repeat: no-reperat;\n"
+            "  border: none;\n"
+            "}")
+            self.ui.playlistEditImage.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{self.thumbUrl}") 0 0 0 0 stretch stretch""")
+
+    def delete(self,i):
+
+        i.PlaylistTemplate.setParent(None)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.page_playlists)
+        self.pere.playlists.remove(i)
+        del(i)
+
+class CustomListWidget(QListWidget):
+    def __init__(self, type,wid, parent=None):
+        super(CustomListWidget, self).__init__(parent)
+        self.setIconSize(QtCore.QSize(124, 124))
+        self.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
+        self.setDefaultDropAction(QtCore.Qt.MoveAction)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.setAcceptDrops(True)
+        self.table = {}
+        self.wid = wid
+        self.type = type
+        self.listener = None
+        self.model().rowsInserted.connect(
+            self.handleRowsInserted, QtCore.Qt.QueuedConnection)
+
+    def handleRowsInserted(self, parent, first, last):
+        #print(f"Adding item to CustomQListWidget '{self}' in '{self.type}'")
+        for index in range(first, last + 1):
+            item = self.item(index)
+            data = item.data(QtCore.Qt.UserRole)
+            
+            if item is not None and self.itemWidget(item) is None and data is not None:
+                id, index, name, icon = data
+                
+                widget = self.wid(self)
+                
+                widget.setTexte(index,name)
+                widget.setIcone(icon)
+                widget.setId(id)
+                
+                if self.wid == DraggableItem:
+                    widget.deletetkt.clicked.connect(lambda: self.deleteMe(item))
+                
+                item.setSizeHint(widget.sizeHint())
+                self.table[widget] = item
+                
+                self.setItemWidget(item, widget)
+                continue
+    
+    def dragMoveEvent(self, event):
+        if ((target := self.row(self.itemAt(event.pos()))) ==
+            (current := self.currentRow()) + 1 or
+            (current == self.count() - 1 and target == -1)):
+            event.ignore()
+        else:
+            super().dragMoveEvent(event)
+
+
+    def getNewList(self):
+        nl = []
+        for x in range(self.count()):
+            nl.append(self.item(x).data(QtCore.Qt.UserRole)[0])
+        return nl
+    
+    def deleteMe(self,who):
+        self.takeItem(self.row(who))
+        self.listener()
+
+    def addListener(self,fct):
+        self.listener = fct
+
+    def removeListener(self):
+        self.listener = None
+
+class DraggableItem(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.id = None
+
+        self.nwidget = QFrame(self)
+
+        self.nwidget.setMinimumSize(QtCore.QSize(0, 80))
+        self.nwidget.setStyleSheet("background-color: rgb(39, 44, 54);\n"
+        " border-radius: 15px;")
+        self.nwidget.setObjectName("horizontalWidget")
+        self.horizontalLayout_16 = QtWidgets.QHBoxLayout(self.nwidget)
+        self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+        self.spacerItem2 = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2)
+        self.label_3 = QtWidgets.QLabel(self.nwidget)
+        self.label_3.setMinimumSize(QtCore.QSize(60, 7))
+        self.label_3.setMaximumSize(QtCore.QSize(75, 75))
+        self.label_3.setText("")
+        self.label_3.setScaledContents(True)
+        self.label_3.setObjectName("label_3")
+        self.horizontalLayout_16.addWidget(self.label_3)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(spacerItem3)
+        self.label = QtWidgets.QLabel(self.nwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setScaledContents(False)
+        self.label.setObjectName("label")
+        self.horizontalLayout_16.addWidget(self.label)
+        self.deletetkt = QtWidgets.QPushButton(self.nwidget)
+        self.deletetkt.setText("")
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/20x20/icons/20x20/cil-x-circle.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.deletetkt.setIcon(icon3)
+        self.horizontalLayout_16.addWidget(self.deletetkt)
+
+        self.allQHBoxLayout = QtWidgets.QHBoxLayout()
+        self.allQHBoxLayout.addWidget(self.nwidget, 0)
+        self.setLayout(self.allQHBoxLayout)
+        self.pere = parent
+        
+
+    def setTexte(self, text1,text2):
+        maxcara = 60
+        a = f"    {text1} - By {text2}"
+        if len(a)>maxcara:
+            tm = maxcara-(len(a)-len(text1))
+            text1 = text1[:tm]+"..."
+
+        self.label.setText(f"    {text1} - By {text2}")
+
+
+    def setIcone(self, imagePath):
+        self.label_3.setStyleSheet(f"""border-radius: 2px;\nborder-image: url("{imagePath}") 0 0 0 0 stretch stretch""")
+
+    def setId(self, id):
+        self.id = id
+
+class DraggableGame(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.id = None
+
+        self.nwidget = QFrame(self)
+
+        self.nwidget.setMinimumSize(QtCore.QSize(0, 80))
+        self.nwidget.setStyleSheet("background-color: rgb(39, 44, 54);\n"
+        " border-radius: 15px;")
+        self.nwidget.setObjectName("horizontalWidget")
+        self.horizontalLayout_16 = QtWidgets.QHBoxLayout(self.nwidget)
+        self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+        self.spacerItem2 = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2)
+        self.label_3 = QtWidgets.QLabel(self.nwidget)
+        self.label_3.setMinimumSize(QtCore.QSize(75, 75))
+        self.label_3.setMaximumSize(QtCore.QSize(75, 75))
+        self.label_3.setText("")
+        self.label_3.setScaledContents(True)
+        self.label_3.setObjectName("label_3")
+        self.horizontalLayout_16.addWidget(self.label_3)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(spacerItem3)
+        self.label = QtWidgets.QLabel(self.nwidget)
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setScaledContents(False)
+        self.label.setObjectName("label")
+        self.horizontalLayout_16.addWidget(self.label)
+
+        self.spacerItem2e = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2e)
+
+
+        self.deletetkt = QtWidgets.QPushButton(self.nwidget)
+        self.deletetkt.setText("")
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/20x20/icons/20x20/cil-x-circle.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.deletetkt.setIcon(icon3)
+
+        self.pushButton_3 = QtWidgets.QPushButton(self.nwidget)
+        self.pushButton_3.setMinimumSize(QtCore.QSize(80, 80))
+        self.pushButton_3.setMaximumSize(QtCore.QSize(80, 8015))
+        self.pushButton_3.setSizeIncrement(QtCore.QSize(0, 0))
+        self.pushButton_3.setText("")
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-chevron-circle-right-alt.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pushButton_3.setIcon(icon5)
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.horizontalLayout_16.addWidget(self.pushButton_3)
+
+        self.horizontalLayout_16.addWidget(self.deletetkt)
+
+        self.spacerItem2d = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2d)
+
+        self.allQHBoxLayout = QtWidgets.QHBoxLayout()
+        self.allQHBoxLayout.addWidget(self.nwidget, 0)
+        self.setLayout(self.allQHBoxLayout)
+        self.pere = parent
+        self.name = ""
+        
+
+    def setTexte(self, text1,text2):
+        a = f"    {text1}"
+        self.label.setText(a)
+        self.name = text1
+
+
+    def setIcone(self, imagePath):
+        self.label_3.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{imagePath}") 0 0 0 0 stretch stretch""")
+
+    def setId(self, id):
+        self.id = id
+        self.pushButton_3.clicked.connect(lambda: self.id(self))
+
+class DraggableAdd(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.id = None
+
+        self.nwidget = QFrame(self)
+
+        self.nwidget.setMinimumSize(QtCore.QSize(0, 80))
+        self.nwidget.setStyleSheet("background-color: rgb(39, 44, 54);\n"
+        " border-radius: 15px;")
+        self.nwidget.setObjectName("horizontalWidget")
+        self.horizontalLayout_16 = QtWidgets.QHBoxLayout(self.nwidget)
+        self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+        self.spacerItem2 = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2)
+        self.label_3 = QtWidgets.QLabel(self.nwidget)
+        self.label_3.setMinimumSize(QtCore.QSize(75, 75))
+        self.label_3.setMaximumSize(QtCore.QSize(75, 75))
+        self.label_3.setText("")
+        self.label_3.setScaledContents(True)
+        self.label_3.setObjectName("label_3")
+        self.horizontalLayout_16.addWidget(self.label_3)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(spacerItem3)
+        self.label = QtWidgets.QLabel(self.nwidget)
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setScaledContents(False)
+        self.label.setObjectName("label")
+        self.horizontalLayout_16.addWidget(self.label)
+
+        self.spacerItem2e = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2e)
+
+
+        self.deletetkt = QtWidgets.QPushButton(self.nwidget)
+        self.deletetkt.setText("")
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/20x20/icons/20x20/cil-library-add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.deletetkt.setIcon(icon3)
+
+
+
+        self.horizontalLayout_16.addWidget(self.deletetkt)
+
+        self.spacerItem2d = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2d)
+
+        self.allQHBoxLayout = QtWidgets.QHBoxLayout()
+        self.allQHBoxLayout.addWidget(self.nwidget, 0)
+        self.setLayout(self.allQHBoxLayout)
+        self.pere = parent
+        
+
+    def setTexte(self, text1,text2):
+        a = f"    {text1}"
+        self.label.setText(a)
+        self.name = text1
+
+
+    def setIcone(self, imagePath):
+        self.label_3.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{imagePath}") 0 0 0 0 stretch stretch""")
+
+    def setId(self, id):
+        self.id = id
+        self.deletetkt.clicked.connect(lambda: self.id(self))
+
+class DraggablePlaylist(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.id = None
+
+        self.nwidget = QFrame(self)
+
+        self.nwidget.setMinimumSize(QtCore.QSize(0, 80))
+        self.nwidget.setStyleSheet("background-color: rgb(39, 44, 54);\n"
+        " border-radius: 15px;")
+        self.nwidget.setObjectName("horizontalWidget")
+        self.horizontalLayout_16 = QtWidgets.QHBoxLayout(self.nwidget)
+        self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+        self.spacerItem2 = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        
+        self.label_3 = QtWidgets.QLabel(self.nwidget)
+        self.label_3.setMinimumSize(QtCore.QSize(75, 75))
+        self.label_3.setMaximumSize(QtCore.QSize(75, 75))
+        self.label_3.setText("")
+        self.label_3.setScaledContents(True)
+        self.label_3.setObjectName("label_3")
+        
+        self.spacerItem3 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        
+        self.label = QtWidgets.QLabel(self.nwidget)
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setScaledContents(False)
+        self.label.setObjectName("label")
+    
+        self.spacerItem2e = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+
+        self.deletetkt = QtWidgets.QPushButton(self.nwidget)
+        self.deletetkt.setText("")
+
+        self.spacerItem2d = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+
+        self.allQHBoxLayout = QtWidgets.QHBoxLayout()
+        self.allQHBoxLayout.addWidget(self.nwidget, 0)
+        self.setLayout(self.allQHBoxLayout)
+        self.pere = parent
+        
+
+    def setTexte(self, text1,text2):
+        a = f"    {text1}"
+        self.label.setText(a)
+        self.name = text1
+        self.plid = text2
+
+
+    def setIcone(self, imagePath):
+        self.thumb = imagePath
+        self.label_3.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{imagePath}") 0 0 0 0 stretch stretch""")
+
+    def setId(self, id):
+        self.id = id[0]
+        self.left = id[1]
+        self.deletetkt.clicked.connect(lambda: self.id(self,self.left))
+        if self.left:
+            icon3 = QtGui.QIcon()
+            icon3.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-chevron-circle-right-alt.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.deletetkt.setIcon(icon3)
+            self.horizontalLayout_16.addItem(self.spacerItem2)
+            self.horizontalLayout_16.addWidget(self.label_3)
+            self.horizontalLayout_16.addItem(self.spacerItem3)
+            self.horizontalLayout_16.addWidget(self.label)
+            self.horizontalLayout_16.addItem(self.spacerItem2e)
+            self.horizontalLayout_16.addWidget(self.deletetkt)
+            self.horizontalLayout_16.addItem(self.spacerItem2d)
+        else:
+            icon3 = QtGui.QIcon()
+            icon3.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-chevron-circle-left-alt.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.deletetkt.setIcon(icon3)
+            self.horizontalLayout_16.addItem(self.spacerItem2)
+            self.horizontalLayout_16.addWidget(self.deletetkt)
+            self.horizontalLayout_16.addItem(self.spacerItem2d)
+            self.horizontalLayout_16.addWidget(self.label_3)
+            self.horizontalLayout_16.addItem(self.spacerItem3)
+            self.horizontalLayout_16.addWidget(self.label)
+            self.horizontalLayout_16.addItem(self.spacerItem2e)
+            
 class FileManager():
     def __init__(self) -> None:  
-        self.app_paths = AppDataPaths('deltaplay')
-        self.app_paths.setup()
-        print(self.app_paths.app_data_path)
+        self.appname = "deltaplayer"
+        self.appauthor = "CGS"
+        dirs = PlatformDirs(self.appname, self.appauthor)
+        self.user_data_dir = dirs.user_data_dir
+        self.user_cache_dir = dirs.user_cache_dir
+        self.user_log_dir = dirs.user_log_dir
+        os.makedirs(self.user_data_dir,exist_ok=True)
+        os.makedirs(self.user_cache_dir,exist_ok=True)
+        os.makedirs(self.user_log_dir,exist_ok=True)
 
 class ExitProgram():
     def __init__(self,managers) -> None:
@@ -232,3 +783,377 @@ class ExitProgram():
     def appExit(self):
         for i in self.managers:
             i.appExit()
+
+class SettingManager():
+
+    def __init__(self) -> None:
+        self.BASESETTINGS = {"volume":50}
+        self.fm = FileManager()
+        self.settings = self.load()
+        
+
+    def save(self):
+        with open(path.join(self.fm.user_data_dir,"settings.json"),"w") as file:
+            file.write(json.dumps(self.settings))
+    
+    def load(self):
+        try:
+            with open(path.join(self.fm.user_data_dir,"settings.json"),"r") as file:
+                h = file.read()
+            return json.loads(h)
+        except:
+            with open(path.join(self.fm.user_data_dir,"settings.json"),"w") as file:
+                file.write(json.dumps(self.BASESETTINGS))
+            return self.BASESETTINGS
+        
+    def appExit(self):
+        print("Exiting Setting Manager")
+        self.save()
+
+class GameManager():
+    def __init__(self,ui,pm) -> None:
+        self.ui = ui
+        self.pm = pm
+        self.fm = FileManager()
+        self.il = ImageLoader(self.fm)
+        self.gameDb = self.loadDb()
+        self.games = self.load()
+        self.currentGame = None
+
+        ####### Game List
+        self.ui.gameList = CustomListWidget(self.ui.gameListHolder,wid=DraggableGame)
+        self.ui.gameList.setDragDropMode(QListWidget.InternalMove)
+        self.ui.gameList.setSelectionMode(QListWidget.ExtendedSelection)
+        #self.ui.gameList.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        self.ui.gameList.setStyleSheet("border: 0px")
+        self.ui.gameList.setObjectName("gameList")
+        self.ui.verticalLayout_16.addWidget(self.ui.gameList)
+
+        self.scrollArea = QtWidgets.QScrollArea(self.ui.gameListHolder)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setStyleSheet("border-radius: 0px;")
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.gridLayoutPlay = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        #self.ui.verticalLayout_16.addWidget(self.scrollArea)
+        ########
+
+        ######## Add List
+        self.ui.addList = CustomListWidget(self.ui.gameAdd,wid=DraggableAdd)
+        self.ui.addList.setDragDropMode(QListWidget.InternalMove)
+        self.ui.addList.setSelectionMode(QListWidget.ExtendedSelection)
+        self.ui.addList.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+
+        self.ui.horizontalLayout_16.addWidget(self.ui.addList)
+        #self.ui.addList.setStyleSheet("border: 0px")
+        self.ui.addList.setObjectName("addList")
+        
+
+        self.scrollArea5 = QtWidgets.QScrollArea(self.ui.addList)
+        self.scrollArea5.setWidgetResizable(True)
+        self.scrollArea5.setStyleSheet("border-radius: 0px;")
+        self.scrollAreaWidgetContents5 = QtWidgets.QWidget()
+        self.gridLayoutPlay7 = QtWidgets.QGridLayout(self.scrollAreaWidgetContents5)
+        self.scrollArea5.setWidget(self.scrollAreaWidgetContents5)
+        #self.ui.verticalLayout_16.addWidget(self.scrollArea)
+        self.ui.addList.setVisible(False)
+        self.ui.gameAddSearch.setVisible(False)
+        #######
+
+        #### EDIT1
+        self.ui.gameEdit1 = CustomListWidget(self.ui.holder1,wid=DraggablePlaylist)
+        self.ui.gameEdit1.setDragDropMode(QListWidget.InternalMove)
+        self.ui.gameEdit1.setSelectionMode(QListWidget.ExtendedSelection)
+        self.ui.gameEdit1.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+
+        self.ui.verticalLayout_19.addWidget(self.ui.gameEdit1)
+        self.ui.gameEdit1.setStyleSheet("border: 5px; background: transparent")
+        self.ui.gameEdit1.setObjectName("gameEdit1")
+        
+
+        self.scrollAreagameEdit1 = QtWidgets.QScrollArea(self.ui.gameEdit1)
+        self.scrollAreagameEdit1.setWidgetResizable(True)
+        self.scrollAreagameEdit1.setStyleSheet("border-radius: 0px;")
+        self.scrollAreaWidgetContentsgameEdit1 = QtWidgets.QWidget()
+        self.gridLayoutPlayEdit1 = QtWidgets.QGridLayout(self.scrollAreaWidgetContentsgameEdit1)
+        self.scrollAreagameEdit1.setWidget(self.scrollAreaWidgetContentsgameEdit1)
+        #self.ui.verticalLayout_19.addWidget(self.scrollArea)
+
+
+        #### EDIT2
+        self.ui.gameEdit2 = CustomListWidget(self.ui.holder2,wid=DraggablePlaylist)
+        self.ui.gameEdit2.setDragDropMode(QListWidget.InternalMove)
+        self.ui.gameEdit2.setSelectionMode(QListWidget.ExtendedSelection)
+        self.ui.gameEdit2.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        self.ui.gameEdit2.setStyleSheet("border: 0px; background: transparent")
+        self.ui.gameEdit2.setObjectName("gameEdit2")
+        self.ui.verticalLayout_20.addWidget(self.ui.gameEdit2)
+
+        self.scrollAreagameEdit2 = QtWidgets.QScrollArea(self.ui.gameEdit2)
+        self.scrollAreagameEdit2.setWidgetResizable(True)
+        self.scrollAreagameEdit2.setStyleSheet("border-radius: 0px;")
+        self.scrollAreaWidgetContentsgameEdit2 = QtWidgets.QWidget()
+        self.gridLayoutPlaygameEdit2 = QtWidgets.QGridLayout(self.scrollAreaWidgetContentsgameEdit2)
+        self.scrollAreagameEdit2.setWidget(self.scrollAreaWidgetContentsgameEdit2)
+        #self.ui.verticalLayout_16.addWidget(self.scrollArea)
+        ###
+
+        self.ui.btn_gameAdd.clicked.connect(lambda: self.handlerAG())
+        self.abState = True
+
+        self.ui.gameAddSearch.textChanged.connect(self.search)
+
+        self.genAutocomplete()
+        self.drawGames()
+
+    def drawGames(self):
+        self.ui.addList.clear()
+
+        gaa = self.gameDb.copy()
+        for gh in self.games:
+            for i in gaa:
+                if i["name"] == gh["name"]:
+                    gaa.remove(i)
+
+        for m in gaa:
+            item = QtWidgets.QListWidgetItem(self.ui.addList)
+            item.setData(QtCore.Qt.UserRole, (self.addGame,m["name"],m["proc"],self.il.get(m["img"])))
+            self.ui.addList.addItem(item)
+
+        self.ui.gameList.clear()
+
+        for m in self.games:
+            item = QtWidgets.QListWidgetItem(self.ui.gameList)
+            item.setData(QtCore.Qt.UserRole, (self.modifyGame,m["name"],m["proc"],self.il.get(m["img"])))
+            self.ui.gameList.addItem(item)
+
+
+
+    def loadDb(self):
+        try:
+            with open(path.join(self.fm.user_data_dir,"gameDb.json"),"r") as file:
+                h = file.read()
+            return json.loads(h)
+        except Exception as e:
+            print(e)
+            print("BIG ERROR : NO GAME DB !!!")
+            return []
+        
+    def load(self):
+        try:
+            with open(path.join(self.fm.user_data_dir,"games.json"),"r") as file:
+                h = file.read()
+            return json.loads(h)
+        except:
+            with open(path.join(self.fm.user_data_dir,"games.json"),"w") as file:
+                file.write(json.dumps([]))
+            return []
+
+    def save(self):
+        with open(path.join(self.fm.user_data_dir,"games.json"),"w") as file:
+            file.write(json.dumps(self.games))
+
+    def handlerAG(self):
+        #self.ui.btn_gameAdd.setEnabled(False)
+        #QtCore.QTimer.singleShot(100, lambda: self.ui.btn_gameAdd.setDisabled(False))
+        if self.abState:
+            self.ui.gameAdd.setMinimumHeight(300)
+            self.ui.gameAdd.setMaximumHeight(300)
+            self.ui.gameAdd.adjustSize()
+            self.ui.addList.setVisible(True)
+            self.ui.gameAddSearch.setVisible(True)
+            self.ui.btn_gameAdd.setText("Cancel")
+            #self.search("")
+            self.abState = False
+            
+        else:
+            self.ui.gameAdd.setMinimumHeight(100)
+            self.ui.gameAdd.setMaximumHeight(100)
+            self.ui.gameAdd.adjustSize()
+            self.ui.addList.setVisible(False)
+            self.ui.gameAddSearch.setVisible(False)
+            self.ui.btn_gameAdd.setText("Add game to librairy")
+            self.abState = True
+
+    def search(self,a):
+
+        for x in range(self.ui.addList.count()):
+            c = self.ui.addList.item(x)
+            c.setHidden(True)
+
+        f = []
+        if a == "":
+            f = self.gameDb
+            for x in range(self.ui.addList.count()):
+                c = self.ui.addList.item(x)
+                c.setHidden(False)
+        else:
+            res = self.autocomplete.search(word=a, max_cost=3, size=5)
+            for i in res:
+                f.append(i[0])
+            g = {}
+            for x in self.ui.addList.table:
+                g[x.name] = self.ui.addList.table[x]
+            for i in f:
+                c = g[i]
+                c.setHidden(False)
+ 
+    def genAutocomplete(self):
+        d,words,e = self.genlist()
+        self.d = d
+        self.e = e
+        self.autocomplete = AutoComplete(words=words)
+
+    def genlist(self):
+        d = {}
+        d2 = {}
+        e = []
+        for g in self.gameDb:
+            e.append(g["name"])
+            d2[g["name"]] = {}
+            d[g["name"]] = g
+        return (d,d2,e)
+
+    def addGame(self,wo):
+        m = wo.name
+        for i in self.gameDb:
+            if i["name"] == m:
+                item = QtWidgets.QListWidgetItem(self.ui.gameList)
+                item.setData(QtCore.Qt.UserRole, (self.modifyGame,i["name"],i["proc"],self.il.get(i["img"])))
+                self.ui.gameList.addItem(item)
+                self.ui.addList.takeItem(self.ui.addList.row(self.ui.addList.table[wo]))
+                i["playlists"] = []
+                self.games.append(i)
+
+    def modifyGame(self,wo):
+        self.currentGame = wo.name
+        gi = None
+        for i in self.games:
+            if i["name"] == wo.name:
+                gi = i
+
+        self.ui.gameTitle.setText("    "+gi["name"])
+        self.ui.gameImage.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{self.il.get(gi["img"])}") 0 0 0 0 stretch stretch""")
+        self.ui.gameEdit1.clear()
+        self.ui.gameEdit2.clear()
+
+        for pl in self.pm.raw_playlists:
+            if pl["plid"] in gi["playlists"]:
+                item = QtWidgets.QListWidgetItem(self.ui.gameEdit2)
+                item.setData(QtCore.Qt.UserRole, ([self.handleDlPl,False],pl["name"],pl["plid"],self.il.get(pl["thumb"])))
+                self.ui.gameEdit2.addItem(item)
+            else:    
+                item = QtWidgets.QListWidgetItem(self.ui.gameEdit1)
+                item.setData(QtCore.Qt.UserRole, ([self.handleDlPl,True],pl["name"],pl["plid"],self.il.get(pl["thumb"])))
+                self.ui.gameEdit1.addItem(item)
+                    
+        self.ui.stackedWidget.setCurrentWidget(self.ui.page_editGame)
+
+    def handleDlPl(self,wo,left):
+        if left:
+            self.ui.gameEdit1.takeItem(self.ui.gameEdit1.row(self.ui.gameEdit1.table[wo]))
+            item = QtWidgets.QListWidgetItem(self.ui.gameEdit2)
+            item.setData(QtCore.Qt.UserRole, ([self.handleDlPl,False],wo.name,"",wo.thumb))
+            self.ui.gameEdit2.addItem(item)
+            for i in self.games:
+                if i["name"] == self.currentGame:
+                    i["playlists"].append(wo.plid)
+        else:
+            self.ui.gameEdit2.takeItem(self.ui.gameEdit2.row(self.ui.gameEdit2.table[wo]))
+            item = QtWidgets.QListWidgetItem(self.ui.gameEdit1)
+            item.setData(QtCore.Qt.UserRole, ([self.handleDlPl,True],wo.name,"",wo.thumb))
+            self.ui.gameEdit1.addItem(item)
+            for i in self.games:
+                if i["name"] == self.currentGame:
+                    i["playlists"].remove(wo.plid)
+
+
+    def appExit(self):
+        print("Exiting Game Manager")
+        self.save()
+
+class DetectorManager(QObject):
+
+    def __init__(self,gm,pm,bm) -> None:
+        QObject.__init__(self)
+        self.gm = gm
+        self.pm = pm
+        self.bm = bm
+        self.interrupt = False
+
+        self.start()
+
+    def verifier_jeu(self,jeux): #renvoie le dico des jeu en train de tourner
+        save = detector.get_process()
+        jt = []
+        for jeu in jeux:
+            if jeu["proc"] in save:
+                jt.append(jeu)
+        return jt
+    
+    def start(self):
+        def worker():
+            self.interrupt = False
+            self.alreadyp = []
+            while True:
+                time.sleep(0)
+                if self.interrupt: break
+                time.sleep(1)
+                r = self.verifier_jeu(self.gm.games)
+                if len(r) == 0: continue
+                for g in r:
+                    k = None
+                    for i in self.alreadyp:
+                        if g["name"] == i["name"]:
+                            k = i
+                            break
+                    if k == None:
+                        k = {"name":g["name"],"time":time.time()}
+                        self.alreadyp.append(k)
+                        rpl = []
+                        for i in g["playlists"]:
+                            for a in self.pm.raw_playlists:
+                                if a["plid"] == i: rpl.append(a)
+                        for i in rpl:
+                            self.pm.mapping[i["plid"]].play()
+                    elif (time.time()-k["time"])>1800:
+                        k["time"] = time.time()
+                        rpl = []
+                        for i in g["playlists"]:
+                            for a in self.pm.raw_playlists:
+                                if a["plid"] == i: rpl.append(a)
+                        for i in rpl:
+                            self.pm.mapping[i["plid"]].play()
+                    else:
+                        pass
+                    break
+
+        t = threading.Thread(target=worker)
+        t.start()
+
+    def appExit(self):
+        self.interrupt = True
+        print("Exiting Detector Manager")
+
+
+class ImageLoader():
+    
+    def __init__(self,fm=None) -> None:
+        if not fm:self.fm = FileManager()
+        else: self.fm = fm
+        
+
+    def get(self,url):
+        ph = path.join(self.fm.user_cache_dir,self.getfn(url))
+        if not path.exists(ph):
+            with open(ph, 'wb') as f:
+                f.write(requests.get(url).content)
+        return ph.replace("\\","/")
+
+    def getfn(self,url):
+        return hashlib.md5(url.encode('utf-8')).hexdigest()+"."+url.split("/")[-1].split("?")[0].split(".")[-1]
+
