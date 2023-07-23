@@ -80,6 +80,17 @@ class PlayBarManager():
     def btnPause(self):
         print("Play")
         self.mp.pause()
+        if self.mp.paused:
+            icon9 = QtGui.QIcon()
+            icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_play.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.ui.btn_pause.setIcon(icon9)
+            self.ui.btn_pause.setIconSize(QtCore.QSize(50, 50))
+        else:
+            icon9 = QtGui.QIcon()
+            icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_pause.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.ui.btn_pause.setIcon(icon9)
+            self.ui.btn_pause.setIconSize(QtCore.QSize(50, 50))
+
 
     def btnRewind(self):
         self.mp.addAndPlay(self.mp.backQueue[-2])
@@ -106,7 +117,7 @@ class PlayBarManager():
         except: self.ui.MusicName.setText("")
         try:
             image = self.il.get(self.mp.current.thumb)
-            self.ui.MusicPoster.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{image}") 10 10 10 10""")
+            self.ui.MusicPoster.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{image}") 50 50 50 50""")
         except Exception as e:
             print(e)
             image = self.il.get("https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/A_black_image.jpg/640px-A_black_image.jpg")
@@ -138,6 +149,8 @@ class PlaylistManager():
         self.gridLayoutPlay = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.ui.verticalLayout_10.addWidget(self.scrollArea)
+
+        self.ui.pushButton_dbrefresh.clicked.connect(lambda: self.reloadall())
 
         self.nextPos = [0,0]
 
@@ -195,7 +208,11 @@ class PlaylistManager():
             self.playlists.append(n)
             self.mapping[pl["plid"]] = n
             self.playlists[-1].create()
-        
+
+    def reloadall(self):
+        for pl in self.playlists:
+            print(f"Reloading {pl}")
+            pl.reload()
 
     def appExit(self):
         print("Exiting Playlist Manager")
@@ -221,6 +238,7 @@ class PlaylistItem():
     def __init__(self,name,musics,thumb,plid,layout,gridFrame,mp,ui,parent) -> None:
         self.nameI = name
         self.musicsI = self.getRealPlaylist(musics)
+        self.raw_musics = musics
         self.plid = plid
         self.layout = layout
         self.gridFrame = gridFrame
@@ -266,7 +284,7 @@ class PlaylistItem():
         self.verticalLayout_13.addWidget(self.thumb)
         self.options = QtWidgets.QFrame(self.PlaylistTemplate)
         self.options.setStyleSheet("\n"
-        "background-color: rgba(0, 0, 0, 2);")
+        "background-color: rgba(0, 0, 0, 200);\nborder-radius: 5px;")
         self.options.setObjectName("options")
         self.optionLayout = QtWidgets.QHBoxLayout(self.options)
         self.optionLayout.setObjectName("optionLayout")
@@ -287,14 +305,8 @@ class PlaylistItem():
         "    background-position: center;\n"
         "    background-repeat: no-reperat;\n"
         "    border: none;\n"
-        "    background-image: url(:/16x16/icons/16x16/cil-transfer.png);\n"
-        "}\n"
-        "QPushButton:hover {\n"
-        "    background-color: rgb(33, 37, 43);\n"
-        "}\n"
-        "QPushButton:pressed {    \n"
-        "    background-color: rgb(85, 170, 255);\n"
-        "}")
+        "    background-image: url(:/16x16/icons/16x16/cil-media-play.png);\n"
+        "}\n")
         self.modifyPlaylist.setText("")
         self.modifyPlaylist.setObjectName("modifyPlaylist")
         self.optionLayout.addWidget(self.modifyPlaylist)
@@ -304,13 +316,20 @@ class PlaylistItem():
 
         self.layout.addWidget(self.PlaylistTemplate, pos[1], pos[0])
 
-        self.thumb.clicked.connect(lambda: self.play())
-        self.modifyPlaylist.clicked.connect(lambda:self.modify())
+        self.thumb.clicked.connect(lambda: self.modify())
+        self.modifyPlaylist.clicked.connect(lambda:self.play())
+
         self.plname.setText(self.nameI)
         
 
     def getRealPlaylist(self,fromjson):
         return [api.YtMusic(data=x) for x in fromjson]
+    
+    def reload(self):
+        a = []
+        for i in self.raw_musics:
+            a.append(api.YtMusic(furl=i["furl"]))
+        self.musicsI = a
     
     def save(self):
         return {"name":self.nameI,"musics":[x.save() for x in self.musicsI],"thumb":self.thumbI,"plid":self.plid}
@@ -335,7 +354,7 @@ class PlaylistItem():
         self.ui.playlistEditAdd.clicked.connect(lambda: self.handlerNM())
         self.ui.playlistEditChangeImage.clicked.connect(lambda: self.handlerCI())
         self.ui.playlistEditDelete.clicked.connect(lambda: self.delete(self))
-        self.ui.playlistEditList.addListener(self.updateList)
+        self.ui.playlistEditList.addListener(self.updateList,self.playAt)
         
 
 
@@ -373,7 +392,7 @@ class PlaylistItem():
             m = api.YtMusic(text)
             self.musicsI.append(m)
             item = QtWidgets.QListWidgetItem(self.ui.playlistEditList)
-            item.setData(QtCore.Qt.UserRole, (m,m.title, m.author, m.thumb))
+            item.setData(QtCore.Qt.UserRole, (m,m.title, m.author, self.il.get(m.thumb)))
             self.ui.playlistEditList.addItem(item)
 
     def getNewImage(self,msg):
@@ -400,6 +419,12 @@ class PlaylistItem():
         self.pere.playlists.remove(i)
         del(i)
 
+    def playAt(self,wo):
+        row = self.ui.playlistEditList.row(wo)
+        self.mp.addAndPlay(self.musicsI[row:])
+            
+        
+
 class CustomListWidget(QListWidget):
     def __init__(self, type,wid, parent=None):
         super(CustomListWidget, self).__init__(parent)
@@ -412,6 +437,7 @@ class CustomListWidget(QListWidget):
         self.wid = wid
         self.type = type
         self.listener = None
+        self.listener2 = None
         self.model().rowsInserted.connect(
             self.handleRowsInserted, QtCore.Qt.QueuedConnection)
 
@@ -425,13 +451,13 @@ class CustomListWidget(QListWidget):
                 id, index, name, icon = data
                 
                 widget = self.wid(self)
-                
                 widget.setTexte(index,name)
                 widget.setIcone(icon)
                 widget.setId(id)
                 
                 if self.wid == DraggableItem:
                     widget.deletetkt.clicked.connect(lambda: self.deleteMe(item))
+                    widget.dplay.clicked.connect(lambda: self.listener2(item))
                 
                 item.setSizeHint(widget.sizeHint())
                 self.table[widget] = item
@@ -458,11 +484,13 @@ class CustomListWidget(QListWidget):
         self.takeItem(self.row(who))
         self.listener()
 
-    def addListener(self,fct):
+    def addListener(self,fct,fct2):
         self.listener = fct
+        self.listener2 = fct2
 
     def removeListener(self):
         self.listener = None
+        self.listener2 = None
 
 class DraggableItem(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -478,8 +506,21 @@ class DraggableItem(QtWidgets.QWidget):
         self.nwidget.setObjectName("horizontalWidget")
         self.horizontalLayout_16 = QtWidgets.QHBoxLayout(self.nwidget)
         self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+
         self.spacerItem2 = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_16.addItem(self.spacerItem2)
+        
+        self.dplay = QtWidgets.QPushButton(self.nwidget)
+        self.dplay.setText("")
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-media-play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.dplay.setIcon(icon3)
+        self.horizontalLayout_16.addWidget(self.dplay)
+
+
+        self.spacerItem2u = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2u)
+
         self.label_3 = QtWidgets.QLabel(self.nwidget)
         self.label_3.setMinimumSize(QtCore.QSize(60, 7))
         self.label_3.setMaximumSize(QtCore.QSize(75, 75))
@@ -505,6 +546,9 @@ class DraggableItem(QtWidgets.QWidget):
         self.deletetkt.setIcon(icon3)
         self.horizontalLayout_16.addWidget(self.deletetkt)
 
+        self.spacerItem2ud = QtWidgets.QSpacerItem(100, 19, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2ud)
+
         self.allQHBoxLayout = QtWidgets.QHBoxLayout()
         self.allQHBoxLayout.addWidget(self.nwidget, 0)
         self.setLayout(self.allQHBoxLayout)
@@ -520,12 +564,12 @@ class DraggableItem(QtWidgets.QWidget):
 
         self.label.setText(f"    {text1} - By {text2}")
 
-
     def setIcone(self, imagePath):
         self.label_3.setStyleSheet(f"""border-radius: 2px;\nborder-image: url("{imagePath}") 0 0 0 0 stretch stretch""")
 
     def setId(self, id):
         self.id = id
+        
 
 class DraggableGame(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -786,10 +830,13 @@ class ExitProgram():
 
 class SettingManager():
 
-    def __init__(self) -> None:
+    def __init__(self,ui) -> None:
+        self.ui = ui
         self.BASESETTINGS = {"volume":50}
         self.fm = FileManager()
         self.settings = self.load()
+
+        
         
 
     def save(self):
@@ -1104,9 +1151,10 @@ class DetectorManager(QObject):
             self.interrupt = False
             self.alreadyp = []
             while True:
-                time.sleep(0)
+                for waittime in range(10):
+                    if self.interrupt: break
+                    time.sleep(1)
                 if self.interrupt: break
-                time.sleep(10)
                 r = self.verifier_jeu(self.gm.games)
                 if len(r) == 0: continue
                 for g in r:

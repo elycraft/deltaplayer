@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
 
         # Settings
         if btnWidget.objectName() == "btn_settings":
-            self.ui.stackedWidget.setCurrentWidget(self.ui.page_home)
+            self.ui.stackedWidget.setCurrentWidget(self.ui.page_settings)
             UIFunctions.resetStyle(self, "btn_settings")
             UIFunctions.labelPage(self, "Settings")
             btnWidget.setStyleSheet(UIFunctions.selectMenu(btnWidget.styleSheet()))
@@ -230,7 +230,7 @@ if __name__ == "__main__":
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeuib.ttf')
     window = MainWindow()
     
-    settingM = SettingManager()
+    settingM = SettingManager(window.ui)
     playBar = PlayBarManager(window.ui,settingM)
     playlistM = PlaylistManager(window.ui,playBar.mp)
     gameM = GameManager(window.ui,playlistM)

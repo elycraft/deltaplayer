@@ -9,6 +9,7 @@ class Player(QObject):
 
     update = Signal(int)
     updateTime = Signal(int)
+    
 
 
     def __init__(self) -> None:
@@ -20,13 +21,14 @@ class Player(QObject):
         self.process = None
         self.interrupt = False
         self.current = None
+        self.DETACHED_PROCESS = 0x08000000
         
         self.time = (0,0)
         self.sound = 99
         self.backQueue = []
 
     def sendToMpv(self,cmd):
-        os.system(f'echo {cmd} >\\\.\pipe\mpvsocket')
+        subprocess.call(f'echo {cmd} >\\\.\pipe\mpvsocket', shell=True)
 
     def play(self,music):
         url = music
@@ -54,11 +56,13 @@ class Player(QObject):
     def pause(self):
         if not self.playing: return
         if self.paused:
-            self.sendToMpv('{ "command": ["set_property", "pause", false] }')
             self.paused = False
+            self.sendToMpv('{ "command": ["set_property", "pause", false] }')
+            
         else:
-            self.sendToMpv('{ "command": ["set_property", "pause", true] }')
             self.paused = True
+            self.sendToMpv('{ "command": ["set_property", "pause", true] }')
+            
 
     def playQueue(self):
         def worker():
@@ -148,7 +152,7 @@ class YtMusic:
             self.furl = furl
             self.title = video.title
             self.duration = video.length
-            self.thumb = video.thumb
+            self.thumb = video.getbestthumb()
             self.author = video.author
 
     def __repr__(self):

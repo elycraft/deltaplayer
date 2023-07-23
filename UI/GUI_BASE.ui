@@ -1562,7 +1562,7 @@ QPushButton:pressed {
                    <string notr="true">background: transparent;</string>
                   </property>
                   <property name="currentIndex">
-                   <number>1</number>
+                   <number>4</number>
                   </property>
                   <widget class="QWidget" name="page_playlists">
                    <layout class="QVBoxLayout" name="verticalLayout_10"/>
@@ -2020,6 +2020,102 @@ QPushButton:pressed {
                        </item>
                       </layout>
                      </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="page_settings">
+                   <layout class="QVBoxLayout" name="verticalLayout_settings">
+                    <item>
+                     <widget class="QFrame" name="refreshPlaylistDb">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>100</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>100</height>
+                       </size>
+                      </property>
+                      <layout class="QHBoxLayout" name="horizontalLayout_19">
+                       <item>
+                        <widget class="QLabel" name="label">
+                         <property name="font">
+                          <font>
+                           <pointsize>20</pointsize>
+                           <weight>50</weight>
+                           <bold>false</bold>
+                          </font>
+                         </property>
+                         <property name="text">
+                          <string>   Refresh the playlist Database (Can take a time!) :</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="pushButton_dbrefresh">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>300</width>
+                           <height>60</height>
+                          </size>
+                         </property>
+                         <property name="font">
+                          <font>
+                           <pointsize>10</pointsize>
+                           <weight>75</weight>
+                           <bold>true</bold>
+                          </font>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color: rgb(39, 44, 54);
+ border-radius: 15px;</string>
+                         </property>
+                         <property name="text">
+                          <string> Refresh</string>
+                         </property>
+                         <property name="icon">
+                          <iconset resource="files.qrc">
+                           <normaloff>:/16x16/icons/16x16/cil-reload.png</normaloff>:/16x16/icons/16x16/cil-reload.png</iconset>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <spacer name="horizontalSpacer_6">
+                         <property name="orientation">
+                          <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>40</width>
+                           <height>20</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="verticalSpacer_4">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
                     </item>
                    </layout>
                   </widget>
@@ -3173,7 +3269,7 @@ QProgressBar::chunk {
                            </property>
                            <property name="styleSheet">
                             <string notr="true">background: transparent;
-background-image: ur(:/16x16/icons/16x16/cil-media-pause.png);
+
 background-position: center;
 background-repeat: no-repeat;
 color: rgb(170, 255, 0);
@@ -3372,7 +3468,7 @@ color: rgb(170, 255, 0);
                       <string notr="true">color: rgb(98, 103, 111);</string>
                      </property>
                      <property name="text">
-                      <string>vB1.0.0</string>
+                      <string>vB1.1.0</string>
                      </property>
                      <property name="alignment">
                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
