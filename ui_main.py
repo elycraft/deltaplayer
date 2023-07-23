@@ -376,7 +376,7 @@ class Ui_MainWindow(object):
 "    background-color: rgb(55, 62, 76);\n"
 "}\n"
 "QSlider::handle:horizontal {\n"
-"    background-color: rgb(85, 170, 255);\n"
+"    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(229, 153, 0, 255), stop:0.768844 rgba(255, 170, 127, 255));\n"
 "    border: none;\n"
 "    height: 18px;\n"
 "    width: 18px;\n"
@@ -384,10 +384,10 @@ class Ui_MainWindow(object):
 "    border-radius: 9px;\n"
 "}\n"
 "QSlider::handle:horizontal:hover {\n"
-"    background-color: rgb(105, 180, 255);\n"
+"    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(237, 153, 0, 255), stop:0.768844 rgba(255, 170, 127, 255));\n"
 "}\n"
 "QSlider::handle:horizontal:pressed {\n"
-"    background-color: rgb(65, 130, 195);\n"
+"    background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(237, 153, 0, 255), stop:0.768844 rgba(255, 170, 127, 255));\n"
 "}\n"
 "\n"
 "QSlider::groove:vertical {\n"
@@ -501,7 +501,7 @@ class Ui_MainWindow(object):
         self.frame_icon_top_bar = QtWidgets.QFrame(self.frame_label_top_btns)
         self.frame_icon_top_bar.setMaximumSize(QtCore.QSize(30, 30))
         self.frame_icon_top_bar.setStyleSheet("background: transparent;\n"
-"border-image:url(:/16x16/icons/delta.png) 0 0 0 0 stretch stretch;\n"
+"border-image:url(:/16x16/icons/delta_new.png) 0 0 0 0 stretch stretch;\n"
 "background-position: center;\n"
 "background-repeat: no-repeat;\n"
 "")
@@ -1591,6 +1591,7 @@ class Ui_MainWindow(object):
         self.MusicPlayer.addWidget(self.label_2)
         self.soundSlider = QtWidgets.QSlider(self.MusicPlayer_2)
         self.soundSlider.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.soundSlider.setProperty("value", 80)
         self.soundSlider.setOrientation(QtCore.Qt.Horizontal)
         self.soundSlider.setObjectName("soundSlider")
         self.MusicPlayer.addWidget(self.soundSlider)
