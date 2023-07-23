@@ -33,6 +33,7 @@ from fast_autocomplete import AutoComplete
 import time
 import detector
 import threading
+from pypresence import Presence
 
 
 
@@ -68,6 +69,10 @@ class PlayBarManager():
         self.soundSlider = self.ui.soundSlider
         self.soundSlider.valueChanged.connect(self.sliderSound)
         self.soundSlider.setValue(sm.settings["volume"])
+
+        client_id = '1132717098561441862'  # Fake ID, put your real one here
+        self.RPC = Presence(client_id)  # Initialize the client class
+        self.RPC.connect()
 
         self.updateTime()
         self.updateUi()
@@ -118,6 +123,13 @@ class PlayBarManager():
         try:
             image = self.il.get(self.mp.current.thumb)
             self.ui.MusicPoster.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{image}") 50 50 50 50""")
+            self.RPC.update(
+                details="Listening on Deltaplayer",
+                state=f"{self.mp.current.author} - {self.mp.current.title}",
+                end=int(time.time() + self.mp.current.duration),
+                large_image=self.mp.current.thumb,
+                small_image="dpicon"
+            )
         except Exception as e:
             print(e)
             image = self.il.get("https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/A_black_image.jpg/640px-A_black_image.jpg")
