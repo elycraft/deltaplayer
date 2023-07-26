@@ -12,8 +12,9 @@ class Player(QObject):
     
 
 
-    def __init__(self) -> None:
+    def __init__(self,logger) -> None:
         QObject.__init__(self)
+        self.logger = logger
         self.playing = False
         self.paused = False
         self.startTime = None
@@ -28,19 +29,20 @@ class Player(QObject):
         self.backQueue = []
 
     def sendToMpv(self,cmd):
-        subprocess.call(f'echo {cmd} >\\\.\pipe\mpvsocket', shell=True)
+        re = subprocess.call(f'echo {cmd} >\\\.\pipe\mpvsocket', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        self.logger.info(f"""Suprocess for cmd : "{cmd}" finished with exit code {re}""")
 
     def play(self,music):
         url = music
         if self.playing:
             self.stop()
         self.time=(0,0)
-        self.process = subprocess.Popen(["mpv", url,"--input-ipc-server=\\\.\pipe\mpvsocket","--force-window=no"])
+        self.process = subprocess.Popen(["mpv", url,"--input-ipc-server=\\\.\pipe\mpvsocket","--force-window=no",'--title=Deltaplayer',f"--volume={self.sound}"],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         self.playing = True
         self.timeSong()
+        with self.process.stdout:
+            self.log_subprocess_output(self.process.stdout,f"api.play --> {url}")
         self.startTime = time.time()
-        time.sleep(0.2)
-        self.setSound()
         self.process.wait()
         self.playing = False
     
@@ -135,6 +137,10 @@ class Player(QObject):
     def updateSound(self,value):
         self.sound = value
         self.setSound()
+
+    def log_subprocess_output(self,pipe,initial):
+        for line in iter(pipe.readline, b''): # b'\n'-separated lines
+            self.logger.info(f'Out[Subprocess::{initial}]: {line}')
 
 class YtMusic:
 

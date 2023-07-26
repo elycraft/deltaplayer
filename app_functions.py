@@ -34,6 +34,7 @@ import time
 import detector
 import threading
 from pypresence import Presence
+import random
 
 
 
@@ -51,13 +52,14 @@ class Functions(MainWindow):
 
 class PlayBarManager():
 
-    def __init__(self,ui,sm) -> None:
+    def __init__(self,ui,sm,logger) -> None:
         self.ui = ui
         self.sm = sm
+        self.logger = logger
         self.il = ImageLoader()
 
         
-        self.mp = api.Player()
+        self.mp = api.Player(self.logger)
         self.mp.update.connect(self.updateUi)
         self.mp.updateTime.connect(self.updateTime)
         self.mp.playQueue()
@@ -79,11 +81,11 @@ class PlayBarManager():
         
     
     def appExit(self):
-        print("Exiting API Player")
+        self.logger.info("Exiting API Player")
         self.mp.stopPlayQueue()
 
     def btnPause(self):
-        print("Play")
+        self.logger.info("Play")
         self.mp.pause()
         if self.mp.paused:
             icon9 = QtGui.QIcon()
@@ -102,7 +104,7 @@ class PlayBarManager():
         del(self.mp.backQueue[-2])
 
     def btnSkip(self):
-        print("Skip")
+        self.logger.info("Skip")
         self.mp.skip()
     
     def sliderSound(self):
@@ -130,15 +132,26 @@ class PlayBarManager():
                 large_image=self.mp.current.thumb,
                 small_image="dpicon"
             )
+            if self.mp.paused:
+                icon9 = QtGui.QIcon()
+                icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_play.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+                self.ui.btn_pause.setIcon(icon9)
+                self.ui.btn_pause.setIconSize(QtCore.QSize(50, 50))
+            else:
+                icon9 = QtGui.QIcon()
+                icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_pause.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+                self.ui.btn_pause.setIcon(icon9)
+                self.ui.btn_pause.setIconSize(QtCore.QSize(50, 50))
         except Exception as e:
-            print(e)
+            self.logger.error(e)
             image = self.il.get("https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/A_black_image.jpg/640px-A_black_image.jpg")
             self.ui.MusicPoster.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{image}") 0 0 0 0 stretch stretch""")
 
 class PlaylistManager():
 
-    def __init__(self,ui,mp) -> None:
+    def __init__(self,ui,mp,logger) -> None:
 
+        self.logger = logger
         self.fm = FileManager()
         self.ui = ui
         self.raw_playlists = self.load()
@@ -216,18 +229,24 @@ class PlaylistManager():
     def drawPlaylists(self):
         
         for pl in self.raw_playlists:
-            n = PlaylistItem(pl["name"],pl["musics"],pl["thumb"],pl["plid"],self.gridLayoutPlay,self.scrollArea,self.mp,self.ui,self)
+            try:
+                doShuffle=pl["doShuffle"]
+            except:
+                doShuffle=False
+            n = PlaylistItem(pl["name"],pl["musics"],pl["thumb"],pl["plid"],self.gridLayoutPlay,self.scrollArea,self.mp,self.ui,self,doShuffle=doShuffle)
             self.playlists.append(n)
             self.mapping[pl["plid"]] = n
             self.playlists[-1].create()
 
     def reloadall(self):
+        self.logger.info("Starting reloading all playlists")
         for pl in self.playlists:
-            print(f"Reloading {pl}")
+            self.logger.info(f"Reloading {pl}")
             pl.reload()
+        self.logger.info(f"Reload finished.")
 
     def appExit(self):
-        print("Exiting Playlist Manager")
+        self.logger.info("Exiting Playlist Manager")
         self.save()
             
         
@@ -236,6 +255,7 @@ class PlaylistManager():
         self.playlists.append(n)
         self.playlists[-1].create()
         self.playlists[-1].modify()
+        self.save()
 
     def getNewPos(self):
         maxcol = 5
@@ -247,7 +267,7 @@ class PlaylistManager():
 
 class PlaylistItem():
 
-    def __init__(self,name,musics,thumb,plid,layout,gridFrame,mp,ui,parent) -> None:
+    def __init__(self,name,musics,thumb,plid,layout,gridFrame,mp,ui,parent,doShuffle=False) -> None:
         self.nameI = name
         self.musicsI = self.getRealPlaylist(musics)
         self.raw_musics = musics
@@ -262,6 +282,7 @@ class PlaylistItem():
         self.il = ImageLoader(self.fm)
         self.thumbI = thumb
         self.thumbUrl = self.il.get(self.thumbI)
+        self.doShuffle = doShuffle
         
 
             
@@ -344,10 +365,18 @@ class PlaylistItem():
         self.musicsI = a
     
     def save(self):
-        return {"name":self.nameI,"musics":[x.save() for x in self.musicsI],"thumb":self.thumbI,"plid":self.plid}
+        return {"name":self.nameI,"musics":[x.save() for x in self.musicsI],"thumb":self.thumbI,"plid":self.plid,"doShuffle":self.doShuffle}
 
     def play(self):
         self.mp.addAndPlay(self.musicsI)
+
+    def autoplay(self):
+        if self.doShuffle: self.shuffle()
+        else: self.play()
+    
+    def shuffle(self):
+        shuffled_list = random.sample(self.musicsI, len(self.musicsI))
+        self.mp.addAndPlay(shuffled_list)
     
     def modify(self):
 
@@ -357,21 +386,28 @@ class PlaylistItem():
             self.ui.playlistEditAdd.clicked.disconnect() 
             self.ui.playlistEditChangeImage.clicked.disconnect() 
             self.ui.playlistEditDelete.clicked.disconnect() 
+            self.ui.btn_peplay.clicked.disconnect() 
+            self.ui.btn_pepshuffle.clicked.disconnect()
             self.ui.playlistEditList.removeListener()
+            self.ui.checkBox_2.stateChanged.disconnect()
         except Exception as e:
-            print(e)
+            pass
         
         self.ui.playlistEditName.textChanged.connect(self.getNewName)
         self.ui.playlistEditList.model().rowsMoved.connect(self.updateList)
         self.ui.playlistEditAdd.clicked.connect(lambda: self.handlerNM())
         self.ui.playlistEditChangeImage.clicked.connect(lambda: self.handlerCI())
         self.ui.playlistEditDelete.clicked.connect(lambda: self.delete(self))
+        self.ui.btn_peplay.clicked.connect(lambda: self.play())
+        self.ui.btn_pepshuffle.clicked.connect(lambda: self.shuffle())
         self.ui.playlistEditList.addListener(self.updateList,self.playAt)
+        self.ui.checkBox_2.stateChanged.connect(lambda: self.hanndleShuffle())
         
 
 
         self.ui.playlistEditList.clear()
         self.ui.playlistEditName.setText(self.nameI)
+        self.ui.checkBox_2.setChecked(self.doShuffle)
         self.ui.playlistEditImage.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{self.thumbUrl}") 0 0 0 0 stretch stretch""")
 
         for m in self.musicsI:
@@ -383,9 +419,14 @@ class PlaylistItem():
     def getNewName(self,text):
         self.nameI = text
         self.plname.setText(text)
+        self.save()
 
     def updateList(self):
         self.musicsI = self.ui.playlistEditList.getNewList()
+
+    def hanndleShuffle(self):
+        self.doShuffle = self.ui.checkBox_2.isChecked()
+        self.save()
 
     def handlerNM(self):
         self.ui.playlistEditAdd.setEnabled(False)
@@ -423,6 +464,7 @@ class PlaylistItem():
             "  border: none;\n"
             "}")
             self.ui.playlistEditImage.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{self.thumbUrl}") 0 0 0 0 stretch stretch""")
+            self.save()
 
     def delete(self,i):
 
@@ -454,7 +496,7 @@ class CustomListWidget(QListWidget):
             self.handleRowsInserted, QtCore.Qt.QueuedConnection)
 
     def handleRowsInserted(self, parent, first, last):
-        #print(f"Adding item to CustomQListWidget '{self}' in '{self.type}'")
+        #self.logger.info(f"Adding item to CustomQListWidget '{self}' in '{self.type}'")
         for index in range(first, last + 1):
             item = self.item(index)
             data = item.data(QtCore.Qt.UserRole)
@@ -842,11 +884,12 @@ class ExitProgram():
 
 class SettingManager():
 
-    def __init__(self,ui) -> None:
+    def __init__(self,ui,logger) -> None:
         self.ui = ui
         self.BASESETTINGS = {"volume":50}
         self.fm = FileManager()
         self.settings = self.load()
+        self.logger = logger
 
         
         
@@ -866,11 +909,12 @@ class SettingManager():
             return self.BASESETTINGS
         
     def appExit(self):
-        print("Exiting Setting Manager")
+        self.logger.info("Exiting Setting Manager")
         self.save()
 
 class GameManager():
-    def __init__(self,ui,pm) -> None:
+    def __init__(self,ui,pm,logger) -> None:
+        self.logger = logger
         self.ui = ui
         self.pm = pm
         self.fm = FileManager()
@@ -1000,8 +1044,8 @@ class GameManager():
         except Exception as e:
             with open(path.join(self.fm.user_data_dir,"gameDb.json"), 'wb') as f:
                 f.write(requests.get("https://raw.githubusercontent.com/elycraft/musicplayer/main/gameDb.json").content)
-            print(e)
-            print("Downloaded gameDb.")
+            self.logger.error(e)
+            self.logger.info("Downloaded gameDb.")
             with open(path.join(self.fm.user_data_dir,"gameDb.json"),"r") as file:
                 h = file.read()
             return json.loads(h)
@@ -1136,13 +1180,14 @@ class GameManager():
 
 
     def appExit(self):
-        print("Exiting Game Manager")
+        self.logger.info("Exiting Game Manager")
         self.save()
 
 class DetectorManager(QObject):
 
-    def __init__(self,gm,pm,bm) -> None:
+    def __init__(self,gm,pm,bm,logger) -> None:
         QObject.__init__(self)
+        self.logger = logger
         self.gm = gm
         self.pm = pm
         self.bm = bm
@@ -1191,7 +1236,7 @@ class DetectorManager(QObject):
                             for a in self.pm.raw_playlists:
                                 if a["plid"] == i: rpl.append(a)
                         for i in rpl:
-                            self.pm.mapping[i["plid"]].play()
+                            self.pm.mapping[i["plid"]].autoplay()
                     else:
                         pass
                     break
@@ -1201,7 +1246,7 @@ class DetectorManager(QObject):
 
     def appExit(self):
         self.interrupt = True
-        print("Exiting Detector Manager")
+        self.logger.info("Exiting Detector Manager")
 
 
 class ImageLoader():

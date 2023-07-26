@@ -15,25 +15,38 @@
 ################################################################################
 
 import sys
+import os
 import platform
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import (QCoreApplication, QPropertyAnimation, QDate, QDateTime, QMetaObject, QObject, QPoint, QRect, QSize, QTime, QUrl, Qt, QEvent)
 from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
-# GUI FILE
 from app_modules import *
-import fast_autocomplete
-import Levenshtein
+import logging
+import logging.handlers
+
+import datetime
+
+class GZipRotator:
+    def __call__(self, source, dest):
+        os.rename(source, dest)
+        f_in = open(dest, 'rb')
+        f_out = gzip.open("%s.gz" % dest, 'wb')
+        f_out.writelines(f_in)
+        f_out.close()
+        f_in.close()
+        os.remove(dest)
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self,logger):
         QMainWindow.__init__(self)
+        self.logger = logger
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
         ## PRINT ==> SYSTEM
-        print('System: ' + platform.system())
-        print('Version: ' +platform.release())
+        self.logger.info('System: ' + platform.system())
+        self.logger.info('Version: ' +platform.release())
 
         ########################################################################
         ## START - WINDOW ATTRIBUTES
@@ -45,7 +58,7 @@ class MainWindow(QMainWindow):
 
         ## SET ==> WINDOW TITLE
         self.setWindowTitle('Deltaplayer')
-        self.setWindowIcon(QtGui.QIcon(':/16x16/icons/logo.png'))
+        self.setWindowIcon(QtGui.QIcon(':/16x16/icons/logo_new.png'))
         UIFunctions.labelTitle(self, 'Deltaplayer')
         UIFunctions.labelDescription(self, '')
         ## ==> END ##
@@ -170,7 +183,7 @@ class MainWindow(QMainWindow):
             UIFunctions.labelPage(self, "Settings")
             btnWidget.setStyleSheet(UIFunctions.selectMenu(btnWidget.styleSheet()))
 
-        print(btnWidget.objectName())
+        self.logger.info(f"Go to {btnWidget.objectName()}")
 
 
     ## ==> END ##
@@ -183,7 +196,7 @@ class MainWindow(QMainWindow):
     ########################################################################
     def eventFilter(self, watched, event):
         if watched == self.le and event.type() == QtCore.QEvent.MouseButtonDblClick:
-            print("pos: ", event.pos())
+            self.logger.info("pos: ", event.pos())
     ## ==> END ##
 
     ## EVENT ==> MOUSE CLICK
@@ -191,17 +204,17 @@ class MainWindow(QMainWindow):
     def mousePressEvent(self, event):
         self.dragPos = event.globalPos()
         if event.buttons() == Qt.LeftButton:
-            print('Mouse click: LEFT CLICK')
+            pass
         if event.buttons() == Qt.RightButton:
-            print('Mouse click: RIGHT CLICK')
+           pass
         if event.buttons() == Qt.MidButton:
-            print('Mouse click: MIDDLE BUTTON')
+            pass
     ## ==> END ##
 
     ## EVENT ==> KEY PRESSED
     ########################################################################
     def keyPressEvent(self, event):
-        print('Key: ' + str(event.key()) + ' | Text Press: ' + str(event.text()))
+        pass#('Key: ' + str(event.key()) + ' | Text Press: ' + str(event.text()))
     ## ==> END ##
 
     ## EVENT ==> RESIZE EVENT
@@ -211,7 +224,7 @@ class MainWindow(QMainWindow):
         return super(MainWindow, self).resizeEvent(event)
 
     def resizeFunction(self):
-        print('Height: ' + str(self.height()) + ' | Width: ' + str(self.width()))
+        self.logger.info('Height: ' + str(self.height()) + ' | Width: ' + str(self.width()))
 
     
     ## ==> END ##
@@ -224,17 +237,36 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    
+    fm = FileManager()
+
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(name)s:[%(levelname)s] at %(asctime)s : %(message)s')
+    handler.setFormatter(formatter)
+    handler.rotator = GZipRotator()
+    root.addHandler(handler)
+
+    now = datetime.datetime.now()
+    log = logging.handlers.TimedRotatingFileHandler(os.path.join(fm.user_log_dir,f"dp-root-log-{now.strftime('%Y%m%d')}.log"), 'midnight', 1, backupCount=5)
+    log.setLevel(logging.DEBUG)
+    log.setFormatter(formatter)
+    log.rotator = GZipRotator()
+    root.addHandler(log)
 
     app = QApplication(sys.argv)
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeui.ttf')
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeuib.ttf')
-    window = MainWindow()
+    window = MainWindow(root)
     
-    settingM = SettingManager(window.ui)
-    playBar = PlayBarManager(window.ui,settingM)
-    playlistM = PlaylistManager(window.ui,playBar.mp)
-    gameM = GameManager(window.ui,playlistM)
-    detectorM = DetectorManager(gameM,playlistM,playBar)
+    settingM = SettingManager(window.ui,root)
+    playBar = PlayBarManager(window.ui,settingM,root)
+    playlistM = PlaylistManager(window.ui,playBar.mp,root)
+    gameM = GameManager(window.ui,playlistM,root)
+    detectorM = DetectorManager(gameM,playlistM,playBar,root)
     
     exitM = ExitProgram([playBar,playlistM,settingM,gameM,detectorM])
 
