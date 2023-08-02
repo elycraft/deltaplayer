@@ -24,8 +24,17 @@ from PySide2.QtWidgets import *
 from app_modules import *
 import logging
 import logging.handlers
-
 import datetime
+
+if getattr(sys, 'frozen', False):
+    import pyi_splash
+
+class SplashScreen(QSplashScreen):
+    def __init__(self):
+        super(QSplashScreen, self).__init__()
+        loadUi("splash.py",self)
+        self.setWindowFlag(Qt.FramelessWindowHint)
+
 
 class GZipRotator:
     def __call__(self, source, dest):
@@ -237,6 +246,10 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    app = QApplication(sys.argv)
+
+    splash = SplashScreen()
+    splash.show()
     
     fm = FileManager()
 
@@ -257,7 +270,7 @@ if __name__ == "__main__":
     log.rotator = GZipRotator()
     root.addHandler(log)
 
-    app = QApplication(sys.argv)
+    
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeui.ttf')
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeuib.ttf')
     window = MainWindow(root)
@@ -271,4 +284,7 @@ if __name__ == "__main__":
     exitM = ExitProgram([playBar,playlistM,settingM,gameM,detectorM])
 
     app.aboutToQuit.connect(exitM.appExit)
+    root.info("App started")
+    if getattr(sys, 'frozen', False):
+        pyi_splash.close()
     sys.exit(app.exec_())
