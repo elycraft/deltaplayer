@@ -35,6 +35,8 @@ import detector
 import threading
 from pypresence import Presence
 import random
+from youtube_search import YoutubeSearch
+import yt_dlp
 
 
 
@@ -89,12 +91,12 @@ class PlayBarManager():
         self.mp.pause()
         if self.mp.paused:
             icon9 = QtGui.QIcon()
-            icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_play.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.ui.btn_pause.setIcon(icon9)
             self.ui.btn_pause.setIconSize(QtCore.QSize(50, 50))
         else:
             icon9 = QtGui.QIcon()
-            icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_pause.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.ui.btn_pause.setIcon(icon9)
             self.ui.btn_pause.setIconSize(QtCore.QSize(50, 50))
 
@@ -134,12 +136,12 @@ class PlayBarManager():
             )
             if self.mp.paused:
                 icon9 = QtGui.QIcon()
-                icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_play.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+                icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
                 self.ui.btn_pause.setIcon(icon9)
                 self.ui.btn_pause.setIconSize(QtCore.QSize(50, 50))
             else:
                 icon9 = QtGui.QIcon()
-                icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_pause.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+                icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
                 self.ui.btn_pause.setIcon(icon9)
                 self.ui.btn_pause.setIconSize(QtCore.QSize(50, 50))
         except Exception as e:
@@ -153,6 +155,7 @@ class PlaylistManager():
 
         self.logger = logger
         self.fm = FileManager()
+        self.il = ImageLoader(self.fm)
         self.ui = ui
         self.raw_playlists = self.load()
         self.playlists = []
@@ -176,6 +179,26 @@ class PlaylistManager():
         self.ui.verticalLayout_10.addWidget(self.scrollArea)
 
         self.ui.pushButton_dbrefresh.clicked.connect(lambda: self.reloadall())
+
+        ########## Serach Video
+        self.ui.serachVL = CustomListWidget(self.ui.serachVideoFrame,wid=SerachItem)
+        self.ui.serachVL.setDragDropMode(QListWidget.InternalMove)
+        self.ui.serachVL.setSelectionMode(QListWidget.ExtendedSelection)
+        self.ui.serachVL.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        self.ui.serachVL.setStyleSheet("border: 0px; background: transparent")
+        self.ui.serachVL.setObjectName("serachVL")
+        self.ui.verticalLayout_21.addWidget(self.ui.serachVL)
+
+        self.scrollAreaserachVL = QtWidgets.QScrollArea(self.ui.serachVL)
+        self.scrollAreaserachVL.setWidgetResizable(True)
+        self.scrollAreaserachVL.setStyleSheet("border-radius: 0px;")
+        self.scrollAreaWidgetContentsserachVL = QtWidgets.QWidget()
+        self.gridLayoutPlaygameEdit2 = QtWidgets.QGridLayout(self.scrollAreaWidgetContentsserachVL)
+        self.scrollAreaserachVL.setWidget(self.scrollAreaWidgetContentsserachVL)
+
+        
+
 
         self.nextPos = [0,0]
 
@@ -264,6 +287,13 @@ class PlaylistManager():
             self.nextPos[0] = 0
             self.nextPos[1] += 1
         return self.nextPos
+    
+    
+
+    
+
+
+        
 
 class PlaylistItem():
 
@@ -383,28 +413,34 @@ class PlaylistItem():
         try:
             self.ui.playlistEditName.textChanged.disconnect() 
             self.ui.playlistEditList.model().rowsMoved.disconnect() 
-            self.ui.playlistEditAdd.clicked.disconnect() 
             self.ui.playlistEditChangeImage.clicked.disconnect() 
             self.ui.playlistEditDelete.clicked.disconnect() 
             self.ui.btn_peplay.clicked.disconnect() 
             self.ui.btn_pepshuffle.clicked.disconnect()
             self.ui.playlistEditList.removeListener()
             self.ui.checkBox_2.stateChanged.disconnect()
+            self.ui.serachVideo.clicked.disconnect()
+            self.ui.searchEdit.returnPressed.disconnect()
+            self.ui.playlistEditAdd.clicked.disconnect() 
+            
         except Exception as e:
             pass
         
         self.ui.playlistEditName.textChanged.connect(self.getNewName)
         self.ui.playlistEditList.model().rowsMoved.connect(self.updateList)
-        self.ui.playlistEditAdd.clicked.connect(lambda: self.handlerNM())
         self.ui.playlistEditChangeImage.clicked.connect(lambda: self.handlerCI())
         self.ui.playlistEditDelete.clicked.connect(lambda: self.delete(self))
         self.ui.btn_peplay.clicked.connect(lambda: self.play())
         self.ui.btn_pepshuffle.clicked.connect(lambda: self.shuffle())
         self.ui.playlistEditList.addListener(self.updateList,self.playAt)
         self.ui.checkBox_2.stateChanged.connect(lambda: self.hanndleShuffle())
+        self.ui.serachVideo.clicked.connect(lambda: self.searchAVideo())
+        self.ui.searchEdit.returnPressed.connect(lambda: self.searchAVideo())
+        self.ui.playlistEditAdd.clicked.connect(lambda: self.handlerNM())
         
 
-
+        self.ui.serachVL.clear()
+        self.ui.searchEdit.setText("")
         self.ui.playlistEditList.clear()
         self.ui.playlistEditName.setText(self.nameI)
         self.ui.checkBox_2.setChecked(self.doShuffle)
@@ -429,28 +465,24 @@ class PlaylistItem():
         self.save()
 
     def handlerNM(self):
-        self.ui.playlistEditAdd.setEnabled(False)
-        QtCore.QTimer.singleShot(100, lambda: self.ui.playlistEditAdd.setDisabled(False))
-        CdialogWin(self.getNewMusic).setTxt("Please give a Youtube url to add to the playlist (This can took a while !) : ")
+        name, done1 = QtWidgets.QInputDialog.getText(self.ui.frame_main, 'Deltaplayer Dialog', "Please give a Youtube Playlist url to import (This can took a while !) : ")
+        self.getImportPlaylist((done1,name))
 
     def handlerCI(self):
-        self.ui.playlistEditChangeImage.setEnabled(False)
-        QtCore.QTimer.singleShot(100, lambda: self.ui.playlistEditChangeImage.setDisabled(False))
-        CdialogWin(self.getNewImage).setTxt("Please give a image url for the new thumbnail : ")
+        name, done1 = QtWidgets.QInputDialog.getText(self.ui.frame_main, 'Deltaplayer Dialog', "Please give a image url for the new thumbnail : ")
+        self.getNewImage((done1,name))
 
     def getNewMusic(self,msg):
-        ok = msg["user"]
-        text = msg["msg"]
-        if ok:
-            m = api.YtMusic(text)
-            self.musicsI.append(m)
-            item = QtWidgets.QListWidgetItem(self.ui.playlistEditList)
-            item.setData(QtCore.Qt.UserRole, (m,m.title, m.author, self.il.get(m.thumb)))
-            self.ui.playlistEditList.addItem(item)
+        text = "https://www.youtube.com/watch?v="+msg
+        m = api.YtMusic(text)
+        self.musicsI.append(m)
+        item = QtWidgets.QListWidgetItem(self.ui.playlistEditList)
+        item.setData(QtCore.Qt.UserRole, (m,m.title, m.author, self.il.get(m.thumb)))
+        self.ui.playlistEditList.addItem(item)
 
     def getNewImage(self,msg):
-        ok = msg["user"]
-        text = msg["msg"]
+        ok = msg[0]
+        text = msg[1]
         if ok:
             self.thumbI = text
             self.thumbUrl = self.il.get(self.thumbI)
@@ -466,6 +498,20 @@ class PlaylistItem():
             self.ui.playlistEditImage.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{self.thumbUrl}") 0 0 0 0 stretch stretch""")
             self.save()
 
+    def getImportPlaylist(self,msg):
+        ok = msg[0]
+        text = msg[1]
+        if ok:
+            with yt_dlp.YoutubeDL({}) as ydl:
+                pl = ydl.extract_info(text, download=False)
+            for video in pl["entries"]:
+                data = {"id":video["id"],"furl":"https://www.youtube.com/watch?v="+video["id"],"title":video["title"],"length":video["duration"],"thumb":video['thumbnails'][-2]['url'],"author":video['uploader']}
+                m = api.YtMusic(data=data)
+                self.musicsI.append(m)
+                item = QtWidgets.QListWidgetItem(self.ui.playlistEditList)
+                item.setData(QtCore.Qt.UserRole, (m,m.title, m.author, self.il.get(m.thumb)))
+                self.ui.playlistEditList.addItem(item)
+
     def delete(self,i):
 
         i.PlaylistTemplate.setParent(None)
@@ -476,9 +522,18 @@ class PlaylistItem():
     def playAt(self,wo):
         row = self.ui.playlistEditList.row(wo)
         self.mp.addAndPlay(self.musicsI[row:])
-            
-        
 
+    def searchAVideo(self):
+        self.ui.serachVL.clear()
+        results = YoutubeSearch(self.ui.searchEdit.text(), max_results=5).to_dict()
+        
+        
+        for v in results:
+            thumb = v["thumbnails"][0]
+            item = QtWidgets.QListWidgetItem(self.ui.serachVL)
+            item.setData(QtCore.Qt.UserRole, ((v["id"],self.getNewMusic),v["title"], v["channel"], self.il.get(thumb)))
+            self.ui.serachVL.addItem(item)
+                    
 class CustomListWidget(QListWidget):
     def __init__(self, type,wid, parent=None):
         super(CustomListWidget, self).__init__(parent)
@@ -582,7 +637,7 @@ class DraggableItem(QtWidgets.QWidget):
         self.label_3.setScaledContents(True)
         self.label_3.setObjectName("label_3")
         self.horizontalLayout_16.addWidget(self.label_3)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        spacerItem3 = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_16.addItem(spacerItem3)
         self.label = QtWidgets.QLabel(self.nwidget)
         font = QtGui.QFont()
@@ -593,6 +648,8 @@ class DraggableItem(QtWidgets.QWidget):
         self.label.setScaledContents(False)
         self.label.setObjectName("label")
         self.horizontalLayout_16.addWidget(self.label)
+        spacerItem3 = QtWidgets.QSpacerItem(100, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(spacerItem3)
         self.deletetkt = QtWidgets.QPushButton(self.nwidget)
         self.deletetkt.setText("")
         icon3 = QtGui.QIcon()
@@ -600,7 +657,7 @@ class DraggableItem(QtWidgets.QWidget):
         self.deletetkt.setIcon(icon3)
         self.horizontalLayout_16.addWidget(self.deletetkt)
 
-        self.spacerItem2ud = QtWidgets.QSpacerItem(100, 19, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.spacerItem2ud = QtWidgets.QSpacerItem(20, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_16.addItem(self.spacerItem2ud)
 
         self.allQHBoxLayout = QtWidgets.QHBoxLayout()
@@ -623,8 +680,80 @@ class DraggableItem(QtWidgets.QWidget):
 
     def setId(self, id):
         self.id = id
+
+class SerachItem(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.id = None
+
+        self.nwidget = QFrame(self)
+
+        self.nwidget.setMinimumSize(QtCore.QSize(0, 80))
+        self.nwidget.setStyleSheet("background-color: rgb(39, 44, 54);\n"
+        " border-radius: 15px;")
+        self.nwidget.setObjectName("horizontalWidget")
+        self.horizontalLayout_16 = QtWidgets.QHBoxLayout(self.nwidget)
+        self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+
+        self.spacerItem2 = QtWidgets.QSpacerItem(10, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2)
+
+        self.label_3 = QtWidgets.QLabel(self.nwidget)
+        self.label_3.setMinimumSize(QtCore.QSize(60, 7))
+        self.label_3.setMaximumSize(QtCore.QSize(75, 75))
+        self.label_3.setText("")
+        self.label_3.setScaledContents(True)
+        self.label_3.setObjectName("label_3")
+        self.spacerItem2ud = QtWidgets.QSpacerItem(20, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2ud)
+        self.horizontalLayout_16.addWidget(self.label_3)
+        
+        self.label = QtWidgets.QLabel(self.nwidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setScaledContents(False)
+        self.label.setObjectName("label")
+        self.horizontalLayout_16.addWidget(self.label)
+
+        spacerItem3 = QtWidgets.QSpacerItem(200, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(spacerItem3)
+
+        self.deletetkt = QtWidgets.QPushButton(self.nwidget)
+        self.deletetkt.setText("")
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-plus.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.deletetkt.setIcon(icon3)
+        self.horizontalLayout_16.addWidget(self.deletetkt)
+
+        self.spacerItem2ud = QtWidgets.QSpacerItem(20, 19, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_16.addItem(self.spacerItem2ud)
+
+        self.allQHBoxLayout = QtWidgets.QHBoxLayout()
+        self.allQHBoxLayout.addWidget(self.nwidget, 0)
+        self.setLayout(self.allQHBoxLayout)
+        self.pere = parent
         
 
+    def setTexte(self, text1,text2):
+        maxcara = 50
+        a = f"    {text1} - By {text2}"
+        if len(a)>maxcara:
+            tm = maxcara-(len(a)-len(text1))
+            text1 = text1[:tm]+"..."
+
+        self.label.setText(f"    {text1} - By {text2}")
+
+    def setIcone(self, imagePath):
+        self.label_3.setStyleSheet(f"""border-radius: 2px;\nborder-image: url("{imagePath}") 0 0 0 0 stretch stretch""")
+
+    def setId(self, id):
+        self.id = id[0]
+        self.deletetkt.clicked.connect(lambda: id[1](self.id))
+        
 class DraggableGame(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1247,7 +1376,6 @@ class DetectorManager(QObject):
     def appExit(self):
         self.interrupt = True
         self.logger.info("Exiting Detector Manager")
-
 
 class ImageLoader():
     

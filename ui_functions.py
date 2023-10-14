@@ -115,8 +115,11 @@ class UIFunctions(MainWindow):
         self.ui.label_top_info_1.setText(text)
 
     def setVersionApp(self):
-        with open("ver.txt", "r") as vertxt:
-            text = vertxt.read()
+        try:
+            with open("ver.txt", "r") as vertxt:
+                text = vertxt.read()
+        except:
+            text="v???"
         self.ui.label_version.setText(text)
         return text
 

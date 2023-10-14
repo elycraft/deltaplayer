@@ -239,7 +239,7 @@ class Ui_MainWindow(object):
 "}\n"
 "QScrollBar::add-line:horizontal {\n"
 "    border: none;\n"
-"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(229, 153, 0, 255), stop:0.768844 rgba(255, 170, 127, 255));\n"
+"    background:rgb(176, 112, 53);\n"
 "    width: 20px;\n"
 "    border-top-right-radius: 7px;\n"
 "    border-bottom-right-radius: 7px;\n"
@@ -248,8 +248,8 @@ class Ui_MainWindow(object):
 "}\n"
 "QScrollBar::sub-line:horizontal {\n"
 "    border: none;\n"
-"   background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(229, 153, 0, 255), stop:0.768844 rgba(255, 170, 127, 255));\n"
-"    width: 20px;\n"
+"    background:rgb(176, 112, 53);\n"
+"   width: 20px;\n"
 "    border-top-left-radius: 7px;\n"
 "    border-bottom-left-radius: 7px;\n"
 "    subcontrol-position: left;\n"
@@ -265,19 +265,19 @@ class Ui_MainWindow(object):
 "}\n"
 " QScrollBar:vertical {\n"
 "    border: none;\n"
-"    background: rgb(52, 59, 72);\n"
+"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(229, 153, 0, 255), stop:0.768844 rgba(255, 170, 127, 255));\n"
 "    width: 14px;\n"
 "    margin: 21px 0 21px 0;\n"
 "    border-radius: 0px;\n"
 " }\n"
 " QScrollBar::handle:vertical {    \n"
-"    background: rgb(85, 170, 255);\n"
+"    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(229, 153, 0, 255), stop:0.768844 rgba(255, 170, 127, 255));\n"
 "    min-height: 25px;\n"
 "    border-radius: 7px\n"
 " }\n"
 " QScrollBar::add-line:vertical {\n"
 "     border: none;\n"
-"    background: rgb(55, 63, 77);\n"
+"    background:  rgb(176, 112, 53);\n"
 "     height: 20px;\n"
 "    border-bottom-left-radius: 7px;\n"
 "    border-bottom-right-radius: 7px;\n"
@@ -286,8 +286,8 @@ class Ui_MainWindow(object):
 " }\n"
 " QScrollBar::sub-line:vertical {\n"
 "    border: none;\n"
-"    background: rgb(55, 63, 77);\n"
-"     height: 20px;\n"
+"    background:  rgb(176, 112, 53);\n"
+"    height: 20px;\n"
 "    border-top-left-radius: 7px;\n"
 "    border-top-right-radius: 7px;\n"
 "     subcontrol-position: top;\n"
@@ -890,13 +890,26 @@ class Ui_MainWindow(object):
         self.verticalFrame1.setObjectName("verticalFrame1")
         self.verticalLayout_17 = QtWidgets.QVBoxLayout(self.verticalFrame1)
         self.verticalLayout_17.setObjectName("verticalLayout_17")
-        self.playlistEditAdd = QtWidgets.QPushButton(self.verticalFrame1)
+        self.serachVideoFrame = QtWidgets.QFrame(self.verticalFrame1)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.serachVideoFrame.sizePolicy().hasHeightForWidth())
+        self.serachVideoFrame.setSizePolicy(sizePolicy)
+        self.serachVideoFrame.setMinimumSize(QtCore.QSize(0, 80))
+        self.serachVideoFrame.setMaximumSize(QtCore.QSize(16777215, 200))
+        self.serachVideoFrame.setStyleSheet("background-color: rgb(39, 44, 54);\n"
+" border-radius: 15px;")
+        self.serachVideoFrame.setObjectName("serachVideoFrame")
+        self.verticalLayout_21 = QtWidgets.QVBoxLayout(self.serachVideoFrame)
+        self.verticalLayout_21.setObjectName("verticalLayout_21")
+        self.playlistEditAdd = QtWidgets.QPushButton(self.serachVideoFrame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.playlistEditAdd.sizePolicy().hasHeightForWidth())
         self.playlistEditAdd.setSizePolicy(sizePolicy)
-        self.playlistEditAdd.setMinimumSize(QtCore.QSize(50, 0))
+        self.playlistEditAdd.setMinimumSize(QtCore.QSize(50, 40))
         self.playlistEditAdd.setMaximumSize(QtCore.QSize(16777215, 50))
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -909,7 +922,35 @@ class Ui_MainWindow(object):
         icon4.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-library-add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.playlistEditAdd.setIcon(icon4)
         self.playlistEditAdd.setObjectName("playlistEditAdd")
-        self.verticalLayout_17.addWidget(self.playlistEditAdd)
+        self.verticalLayout_21.addWidget(self.playlistEditAdd)
+        self.horizontalFrame3 = QtWidgets.QFrame(self.serachVideoFrame)
+        self.horizontalFrame3.setMaximumSize(QtCore.QSize(16777215, 50))
+        self.horizontalFrame3.setObjectName("horizontalFrame3")
+        self.horizontalLayout_23 = QtWidgets.QHBoxLayout(self.horizontalFrame3)
+        self.horizontalLayout_23.setObjectName("horizontalLayout_23")
+        spacerItem6 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_23.addItem(spacerItem6)
+        self.searchEdit = QtWidgets.QLineEdit(self.horizontalFrame3)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.searchEdit.setFont(font)
+        self.searchEdit.setObjectName("searchEdit")
+        self.horizontalLayout_23.addWidget(self.searchEdit)
+        self.serachVideo = QtWidgets.QPushButton(self.horizontalFrame3)
+        self.serachVideo.setMinimumSize(QtCore.QSize(40, 40))
+        self.serachVideo.setStyleSheet("background-color: rgb(33, 37, 43);\n"
+"border-radius: 15px;")
+        self.serachVideo.setText("")
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-magnifying-glass.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.serachVideo.setIcon(icon5)
+        self.serachVideo.setObjectName("serachVideo")
+        self.horizontalLayout_23.addWidget(self.serachVideo)
+        spacerItem7 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_23.addItem(spacerItem7)
+        self.verticalLayout_21.addWidget(self.horizontalFrame3)
+        self.verticalLayout_17.addWidget(self.serachVideoFrame)
         self.hLayout_15.addWidget(self.verticalFrame1)
         self.stackedWidget.addWidget(self.page_editPlaylist)
         self.page_games = QtWidgets.QWidget()
@@ -994,8 +1035,8 @@ class Ui_MainWindow(object):
         self.gameTitle.setFont(font)
         self.gameTitle.setObjectName("gameTitle")
         self.horizontalLayout_17.addWidget(self.gameTitle)
-        spacerItem6 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_17.addItem(spacerItem6)
+        spacerItem8 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_17.addItem(spacerItem8)
         self.verticalLayout_250.addWidget(self.frameTitle)
         self.frameDecal = QtWidgets.QFrame(self.page_editGame)
         self.frameDecal.setObjectName("frameDecal")
@@ -1008,8 +1049,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_19 = QtWidgets.QVBoxLayout(self.holder1)
         self.verticalLayout_19.setObjectName("verticalLayout_19")
         self.horizontalLayout_18.addWidget(self.holder1)
-        spacerItem7 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_18.addItem(spacerItem7)
+        spacerItem9 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_18.addItem(spacerItem9)
         self.holder2 = QtWidgets.QFrame(self.frameDecal)
         self.holder2.setStyleSheet("background-color: rgb(39, 44, 54);\n"
 " border-radius: 15px;")
@@ -1051,16 +1092,16 @@ class Ui_MainWindow(object):
         self.pushButton_dbrefresh.setFont(font)
         self.pushButton_dbrefresh.setStyleSheet("background-color: rgb(39, 44, 54);\n"
 " border-radius: 15px;")
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-reload.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.pushButton_dbrefresh.setIcon(icon5)
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-reload.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pushButton_dbrefresh.setIcon(icon6)
         self.pushButton_dbrefresh.setObjectName("pushButton_dbrefresh")
         self.horizontalLayout_19.addWidget(self.pushButton_dbrefresh)
-        spacerItem8 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_19.addItem(spacerItem8)
+        spacerItem10 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_19.addItem(spacerItem10)
         self.verticalLayout_settings.addWidget(self.refreshPlaylistDb)
-        spacerItem9 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_settings.addItem(spacerItem9)
+        spacerItem11 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_settings.addItem(spacerItem11)
         self.thanks = QtWidgets.QLabel(self.page_settings)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -1160,9 +1201,9 @@ class Ui_MainWindow(object):
 "    background-color: rgb(35, 40, 49);\n"
 "    border: 2px solid rgb(43, 50, 61);\n"
 "}")
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-folder-open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.pushButton.setIcon(icon6)
+        icon7 = QtGui.QIcon()
+        icon7.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-folder-open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pushButton.setIcon(icon7)
         self.pushButton.setObjectName("pushButton")
         self.gridLayout.addWidget(self.pushButton, 0, 1, 1, 1)
         self.labelVersion_3 = QtWidgets.QLabel(self.frame_content_wid_1)
@@ -1318,9 +1359,9 @@ class Ui_MainWindow(object):
 "    color: rgb(210, 210, 210);\n"
 "    background-color: rgb(52, 58, 71);\n"
 "}")
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-link.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.commandLinkButton.setIcon(icon7)
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap(":/16x16/icons/16x16/cil-link.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.commandLinkButton.setIcon(icon8)
         self.commandLinkButton.setObjectName("commandLinkButton")
         self.gridLayout_2.addWidget(self.commandLinkButton, 1, 6, 1, 1)
         self.horizontalSlider = QtWidgets.QSlider(self.frame_2)
@@ -1544,8 +1585,8 @@ class Ui_MainWindow(object):
         self.MusicPlayer_2.setObjectName("MusicPlayer_2")
         self.MusicPlayer = QtWidgets.QHBoxLayout(self.MusicPlayer_2)
         self.MusicPlayer.setObjectName("MusicPlayer")
-        spacerItem10 = QtWidgets.QSpacerItem(150, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
-        self.MusicPlayer.addItem(spacerItem10)
+        spacerItem12 = QtWidgets.QSpacerItem(150, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.MusicPlayer.addItem(spacerItem12)
         self.MusicPoster = QtWidgets.QLabel(self.MusicPlayer_2)
         self.MusicPoster.setMinimumSize(QtCore.QSize(150, 150))
         self.MusicPoster.setMaximumSize(QtCore.QSize(150, 150))
@@ -1606,21 +1647,21 @@ class Ui_MainWindow(object):
         self.verticalLayout_12.addWidget(self.Bar)
         self.horizontalLayout_15.addWidget(self.frame2)
         self.BarAndPause.addWidget(self.frame1)
-        self.horizontalFrame3 = QtWidgets.QFrame(self.BarAndPause_2)
-        self.horizontalFrame3.setObjectName("horizontalFrame3")
-        self.horizontalLayout_13 = QtWidgets.QHBoxLayout(self.horizontalFrame3)
+        self.horizontalFrame4 = QtWidgets.QFrame(self.BarAndPause_2)
+        self.horizontalFrame4.setObjectName("horizontalFrame4")
+        self.horizontalLayout_13 = QtWidgets.QHBoxLayout(self.horizontalFrame4)
         self.horizontalLayout_13.setObjectName("horizontalLayout_13")
-        self.btn_rewind = QtWidgets.QPushButton(self.horizontalFrame3)
+        self.btn_rewind = QtWidgets.QPushButton(self.horizontalFrame4)
         self.btn_rewind.setMaximumSize(QtCore.QSize(50, 50))
         self.btn_rewind.setStyleSheet("")
         self.btn_rewind.setText("")
-        icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_rewind.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btn_rewind.setIcon(icon8)
+        icon9 = QtGui.QIcon()
+        icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_rewind.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_rewind.setIcon(icon9)
         self.btn_rewind.setIconSize(QtCore.QSize(50, 50))
         self.btn_rewind.setObjectName("btn_rewind")
         self.horizontalLayout_13.addWidget(self.btn_rewind)
-        self.btn_pause = QtWidgets.QPushButton(self.horizontalFrame3)
+        self.btn_pause = QtWidgets.QPushButton(self.horizontalFrame4)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -1637,24 +1678,24 @@ class Ui_MainWindow(object):
 "color: rgb(170, 255, 0);\n"
 "")
         self.btn_pause.setText("")
-        icon9 = QtGui.QIcon()
-        icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_pause.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btn_pause.setIcon(icon9)
+        icon10 = QtGui.QIcon()
+        icon10.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_pause.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_pause.setIcon(icon10)
         self.btn_pause.setIconSize(QtCore.QSize(50, 50))
         self.btn_pause.setAutoRepeat(False)
         self.btn_pause.setDefault(False)
         self.btn_pause.setObjectName("btn_pause")
         self.horizontalLayout_13.addWidget(self.btn_pause)
-        self.btn_skip = QtWidgets.QPushButton(self.horizontalFrame3)
+        self.btn_skip = QtWidgets.QPushButton(self.horizontalFrame4)
         self.btn_skip.setMaximumSize(QtCore.QSize(50, 50))
         self.btn_skip.setText("")
-        icon10 = QtGui.QIcon()
-        icon10.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_skip.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btn_skip.setIcon(icon10)
+        icon11 = QtGui.QIcon()
+        icon11.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_skip.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_skip.setIcon(icon11)
         self.btn_skip.setIconSize(QtCore.QSize(50, 50))
         self.btn_skip.setObjectName("btn_skip")
         self.horizontalLayout_13.addWidget(self.btn_skip)
-        self.BarAndPause.addWidget(self.horizontalFrame3)
+        self.BarAndPause.addWidget(self.horizontalFrame4)
         self.MusicPlayer.addWidget(self.BarAndPause_2)
         self.label_2 = QtWidgets.QLabel(self.MusicPlayer_2)
         self.label_2.setText("")
@@ -1667,8 +1708,8 @@ class Ui_MainWindow(object):
         self.soundSlider.setOrientation(QtCore.Qt.Horizontal)
         self.soundSlider.setObjectName("soundSlider")
         self.MusicPlayer.addWidget(self.soundSlider)
-        spacerItem11 = QtWidgets.QSpacerItem(150, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
-        self.MusicPlayer.addItem(spacerItem11)
+        spacerItem13 = QtWidgets.QSpacerItem(150, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.MusicPlayer.addItem(spacerItem13)
         self.verticalLayout_9.addWidget(self.MusicPlayer_2)
         self.verticalLayout_4.addWidget(self.frame_content)
         self.frame_grip = QtWidgets.QFrame(self.frame_content_right)
@@ -1721,7 +1762,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(4)
+        self.stackedWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         MainWindow.setTabOrder(self.btn_minimize, self.btn_maximize_restore)
         MainWindow.setTabOrder(self.btn_maximize_restore, self.btn_close)
@@ -1752,7 +1793,8 @@ class Ui_MainWindow(object):
         self.btn_pepshuffle.setText(_translate("MainWindow", "Play in Shuffle"))
         self.playlistEditDelete.setText(_translate("MainWindow", "Delete this playlist"))
         self.checkBox_2.setText(_translate("MainWindow", "  Shuffle mode (With Auto-Player)"))
-        self.playlistEditAdd.setText(_translate("MainWindow", " Add a music"))
+        self.playlistEditAdd.setText(_translate("MainWindow", "  Import a playlist from Youtube"))
+        self.searchEdit.setPlaceholderText(_translate("MainWindow", "Search for a video here"))
         self.btn_gameAdd.setText(_translate("MainWindow", "Add game to librairy"))
         self.gameAddSearch.setPlaceholderText(_translate("MainWindow", "Type a game"))
         self.gameTitle.setText(_translate("MainWindow", "TextLabel"))

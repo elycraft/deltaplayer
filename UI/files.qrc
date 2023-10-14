@@ -2,12 +2,13 @@
   <qresource prefix="16x16">
     <file>icons/delta_new.png</file>
     <file>icons/logo_new.png</file>
-    <file>icons/gplay_play.svg</file>
+    <file>icons/gplay_no-image.png</file>
+    <file>icons/gplay_pause.png</file>
+    <file>icons/gplay_play.png</file>
+    <file>icons/gplay_rewind.png</file>
+    <file>icons/gplay_skip.png</file>
     <file>icons/logo.png</file>
     <file>icons/delta.png</file>
-    <file>icons/gplay_no-image.svg</file>
-    <file>icons/gplay_rewind.svg</file>
-    <file>icons/gplay_skip.svg</file>
     <file>icons/16x16/cil-arrow-bottom.png</file>
     <file>icons/16x16/cil-arrow-top.png</file>
     <file>icons/16x16/cil-size-grip.png</file>
@@ -27,7 +28,6 @@
     <file>icons/16x16/cil-arrow-circle-left.png</file>
     <file>icons/16x16/cil-arrow-circle-right.png</file>
     <file>icons/16x16/cil-arrow-circle-top.png</file>
-    <file>icons/gplay_pause.svg</file>
     <file>icons/16x16/cil-arrow-left.png</file>
     <file>icons/16x16/cil-arrow-right.png</file>
     <file>icons/16x16/cil-at.png</file>
