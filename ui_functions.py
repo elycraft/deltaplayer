@@ -114,6 +114,12 @@ class UIFunctions(MainWindow):
     def labelDescription(self, text):
         self.ui.label_top_info_1.setText(text)
 
+    def setVersionApp(self):
+        with open("ver.txt", "r") as vertxt:
+            text = vertxt.read()
+        self.ui.label_version.setText(text)
+        return text
+
     ## ==> DYNAMIC MENUS
     ########################################################################
     def addNewMenu(self, name, objName, icon, isTopMenu):

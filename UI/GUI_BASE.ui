@@ -1562,7 +1562,7 @@ QPushButton:pressed {
                    <string notr="true">background: transparent;</string>
                   </property>
                   <property name="currentIndex">
-                   <number>1</number>
+                   <number>4</number>
                   </property>
                   <widget class="QWidget" name="page_playlists">
                    <layout class="QVBoxLayout" name="verticalLayout_10"/>
@@ -2285,6 +2285,23 @@ QPushButton:pressed {
                        </size>
                       </property>
                      </spacer>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="thanks">
+                      <property name="font">
+                       <font>
+                        <pointsize>12</pointsize>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Thanks to Drakz for making the app logo, to Djoe for making a process looking function and to S0dio for making the splash screen image</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>

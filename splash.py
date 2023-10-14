@@ -29,6 +29,7 @@ class Ui_Form(object):
         self.label.setText("")
         self.label.setObjectName("label")
 
+
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
 

@@ -19,21 +19,40 @@ import os
 import platform
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import (QCoreApplication, QPropertyAnimation, QDate, QDateTime, QMetaObject, QObject, QPoint, QRect, QSize, QTime, QUrl, Qt, QEvent)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient)
+from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient,QMovie)
 from PySide2.QtWidgets import *
 from app_modules import *
 import logging
 import logging.handlers
 import datetime
+from splash import *
+
+
 
 if getattr(sys, 'frozen', False):
     import pyi_splash
 
 class SplashScreen(QSplashScreen):
     def __init__(self):
-        super(QSplashScreen, self).__init__()
-        loadUi("splash.py",self)
+        super(SplashScreen,self).__init__()
+        self.ui = Ui_Form()
+        self.ui.setupUi(self)
         self.setWindowFlag(Qt.FramelessWindowHint)
+        
+        #self.ui.label.setPixmap(pixmap)
+        #self.ui.setCentralWidget(self.ui.label)
+        
+
+
+class MySplashScreen(QSplashScreen):
+    def __init__(self, animation, flags):
+        # run event dispatching in another thread
+        QSplashScreen.__init__(self, QPixmap(), flags)
+        self.movie = QMovie(animation)
+        
+        self.movie.start()
+
+    
 
 
 class GZipRotator:
@@ -70,6 +89,8 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QtGui.QIcon(':/16x16/icons/logo_new.png'))
         UIFunctions.labelTitle(self, 'Deltaplayer')
         UIFunctions.labelDescription(self, '')
+        appver = UIFunctions.setVersionApp(self)
+        self.logger.info('AppVersion: ' +appver)
         ## ==> END ##
 
         ## WINDOW SIZE ==> DEFAULT SIZE
@@ -103,7 +124,7 @@ class MainWindow(QMainWindow):
         ## ==> END ##
 
         ## USER ICON ==> SHOW HIDE
-        UIFunctions.userIcon(self, "ED", "", True)
+        UIFunctions.userIcon(self, os.getlogin(), "", True)
         ## ==> END ##
 
 
@@ -161,7 +182,7 @@ class MainWindow(QMainWindow):
 
         ## SHOW ==> MAIN WINDOW
         ########################################################################
-        self.show()
+        
         ## ==> END ##
 
     ########################################################################
@@ -243,16 +264,15 @@ class MainWindow(QMainWindow):
     ## END ==> APP EVENTS
     ############################## ---/--/--- ##############################
 
-
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    splash = SplashScreen()
-    splash.show()
     
-    fm = FileManager()
 
+    #splash = SplashScreen()
+    #splash.show()
+
+    fm = FileManager()
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 
@@ -270,21 +290,28 @@ if __name__ == "__main__":
     log.rotator = GZipRotator()
     root.addHandler(log)
 
-    
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeui.ttf')
     QtGui.QFontDatabase.addApplicationFont('fonts/segoeuib.ttf')
     window = MainWindow(root)
-    
+
+
     settingM = SettingManager(window.ui,root)
     playBar = PlayBarManager(window.ui,settingM,root)
     playlistM = PlaylistManager(window.ui,playBar.mp,root)
     gameM = GameManager(window.ui,playlistM,root)
     detectorM = DetectorManager(gameM,playlistM,playBar,root)
-    
-    exitM = ExitProgram([playBar,playlistM,settingM,gameM,detectorM])
 
+    exitM = ExitProgram([playBar,playlistM,settingM,gameM,detectorM])
     app.aboutToQuit.connect(exitM.appExit)
+
+    
+
+    
+    window.show()
+
+    #splash.finish(window)
     root.info("App started")
     if getattr(sys, 'frozen', False):
         pyi_splash.close()
+    
     sys.exit(app.exec_())

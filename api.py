@@ -2,7 +2,7 @@ import threading
 import subprocess
 import os
 import time
-import pafy
+import yt_dlp
 from PySide2.QtCore import QObject, Signal
 
 class Player(QObject):
@@ -153,22 +153,33 @@ class YtMusic:
             self.thumb = data["thumb"]
             self.author = data["author"]
         else:
-            video = pafy.new(furl)
-            self.id = video.videoid
+            ydl_opts = {}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                video = ydl.extract_info(furl, download=False)
+            self.id = video["id"]
             self.furl = furl
-            self.title = video.title
-            self.duration = video.length
-            self.thumb = video.getbestthumb()
-            self.author = video.author
+            self.title = video["title"]
+            self.duration = video['duration']
+            self.thumb = video['thumbnails'][-2]['url'] 
+            self.author = video['uploader']
 
     def __repr__(self):
         return self.title
     
     def get_url(self):
-        
-        video = pafy.new(self.furl)
-        self.url = video.audiostreams[0]
-        return self.url.url
+        try:
+            ydl_opts = {}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                video = ydl.extract_info(self.furl, download=False)
+                allstreams = [z for z in video['formats']]
+                audiostreams = []
+                for x in allstreams:
+                    if (x.get('acodec') != 'none' and x.get('vcodec') == 'none'):
+                        audiostreams.append(x)
+            self.url = audiostreams[0]
+            return self.url["url"]
+        except Exception as e:
+            return "Error"
     
     def save(self):
         return {"id":self.id,"furl":self.furl,"title":self.title,"length":self.duration,"thumb":self.thumb,"author":self.author}
