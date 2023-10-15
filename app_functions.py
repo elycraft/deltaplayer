@@ -74,9 +74,13 @@ class PlayBarManager():
         self.soundSlider.valueChanged.connect(self.sliderSound)
         self.soundSlider.setValue(sm.settings["volume"])
 
-        client_id = '1132717098561441862'  # Fake ID, put your real one here
-        self.RPC = Presence(client_id)  # Initialize the client class
-        self.RPC.connect()
+        self.hasDiscord = True
+        try:
+            client_id = '1132717098561441862'  # Fake ID, put your real one here
+            self.RPC = Presence(client_id)  # Initialize the client class
+            self.RPC.connect()
+        except:
+            self.hasDiscord = False
 
         self.updateTime()
         self.updateUi()
@@ -127,13 +131,14 @@ class PlayBarManager():
         try:
             image = self.il.get(self.mp.current.thumb)
             self.ui.MusicPoster.setStyleSheet(f"""border-radius: 15px;\nborder-image: url("{image}") 50 50 50 50""")
-            self.RPC.update(
-                details="Listening on Deltaplayer",
-                state=f"{self.mp.current.author} - {self.mp.current.title}",
-                end=int(time.time() + self.mp.current.duration),
-                large_image=self.mp.current.thumb,
-                small_image="dpicon"
-            )
+            if self.hasDiscord:
+                self.RPC.update(
+                    details="Listening on Deltaplayer",
+                    state=f"{self.mp.current.author} - {self.mp.current.title}",
+                    end=int(time.time() + self.mp.current.duration),
+                    large_image=self.mp.current.thumb,
+                    small_image="dpicon"
+                )
             if self.mp.paused:
                 icon9 = QtGui.QIcon()
                 icon9.addPixmap(QtGui.QPixmap(":/16x16/icons/gplay_play.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)

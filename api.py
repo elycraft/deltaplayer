@@ -37,7 +37,7 @@ class Player(QObject):
         if self.playing:
             self.stop()
         self.time=(0,0)
-        self.process = subprocess.Popen(["mpv", url,"--input-ipc-server=\\\.\pipe\mpvsocket","--force-window=no",'--title=Deltaplayer',f"--volume={self.sound}"],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        self.process = subprocess.Popen([os.path.join(os.getcwd(),"mpv"), url,"--input-ipc-server=\\\.\pipe\mpvsocket","--force-window=no",'--title=Deltaplayer',f"--volume={self.sound}"],stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         self.playing = True
         self.timeSong()
         with self.process.stdout:
