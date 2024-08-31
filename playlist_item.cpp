@@ -3,6 +3,34 @@
 #include "GUI_BASE.h"
 #include "./ui_GUI_BASE.h"
 
+bool askUserConfirmation() {
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Confirmation");
+    msgBox.setText("Are you sure you want to proceed?");
+    msgBox.setIcon(QMessageBox::Question);
+
+    // Ajouter les boutons Oui et Non
+    QPushButton* yesButton = msgBox.addButton(QMessageBox::Yes);
+    QPushButton* noButton = msgBox.addButton(QMessageBox::No);
+
+    // Optionnel : définir le bouton par défaut
+    msgBox.setDefaultButton(yesButton);
+
+    // Afficher la boîte de dialogue et attendre la réponse de l'utilisateur
+    msgBox.exec();
+
+    // Vérifier quel bouton a été cliqué
+    if (msgBox.clickedButton() == yesButton) {
+        // Code à exécuter si l'utilisateur clique sur Oui
+        return true;
+    } else if (msgBox.clickedButton() == noButton) {
+        // Code à exécuter si l'utilisateur clique sur Non
+        return false;
+    }
+    qWarning("Error in confirmation");
+    return false;
+}
+
 QList<QJsonObject> jsonArrayToList(const QJsonArray& array) {
     QList<QJsonObject> list;
     for (const QJsonValue& value : array) {
@@ -23,13 +51,16 @@ playlist_item::playlist_item(QString namein,QJsonArray musicsin,QString thumbin,
     mp = mpin;
     window = windowin;
     parent = parentin;
+    doShuffle = doShufflein;
     fm = new FileManager();
     il = new ImageLoader();
+
+
 
     thumbI = thumbin;
     thumbUrl = il->get(thumbI);
 
-    connect(parent->playlistEditList, &CustomListWidget::hasPlayAt, this, &playlist_item::playAt);
+
 
 }
 
@@ -118,7 +149,7 @@ QList<yt_music*> playlist_item::getRealPlaylist(const QJsonArray& fromjson) {
             for (auto it = obj.begin(); it != obj.end(); ++it) {
                 data[it.key()] = it.value().toString();
             }
-            yt_music* idwin = new yt_music("", data);
+            yt_music* idwin = new yt_music(parent->ytPath, "", data);
 
             // Créer un objet yt_music avec data et un urlin vide
             result.append(idwin);
@@ -131,49 +162,54 @@ void playlist_item::play() {
     mp->add_and_play(musicsI);
 }
 
+void playlist_item::autoplay() {
+    if (doShuffle) {shuffle();}
+    else {play();}
+}
+
+void playlist_item::shuffle() {
+    QList<yt_music*> copmusics = musicsI;
+    qInfo() << copmusics;
+    std::random_shuffle(copmusics.begin(), copmusics.begin());
+    qInfo() << copmusics;
+    mp->add_and_play(copmusics);
+}
+
 void playlist_item::modify() {
     try {
-        /*
-        disconnect(window->ui->playlistEditName, &QLineEdit::textChanged, this, &playlist_item::getNewName);
-        disconnect(window->ui->playlistEditList->model(), &QAbstractItemModel::rowsMoved, this, &playlist_item::updateList);
-        disconnect(window->ui->playlistEditChangeImage, &QPushButton::clicked, this, &playlist_item::handlerCI);
 
-        disconnect(window->ui->playlistEditDelete, &QPushButton::clicked, this, [=]() { deletePlaylist(); });
-        */
-        disconnect(window->ui->btn_peplay, &QPushButton::clicked, this, &playlist_item::play);
-        /*
-        disconnect(window->ui->btn_pepshuffle, &QPushButton::clicked, this, &playlist_item::shuffle);
-        disconnect(window->ui->playlistEditList, &QListWidget::itemSelectionChanged, this, &playlist_item::updateList);
-        disconnect(window->ui->checkBox_2, &QCheckBox::stateChanged, this, &playlist_item::handleShuffle);
-        disconnect(window->ui->serachVideo, &QPushButton::clicked, this, &playlist_item::searchAVideo);
-        disconnect(window->ui->searchEdit, &QLineEdit::returnPressed, this, &playlist_item::searchAVideo);
-        disconnect(window->ui->playlistEditAdd, &QPushButton::clicked, this, &playlist_item::handlerNM);
-        */
+        disconnect(window->ui->playlistEditName, &QLineEdit::textChanged, nullptr, nullptr);
+        disconnect(window->ui->playlistEditChangeImage, &QPushButton::clicked, nullptr, nullptr);
+        disconnect(window->ui->playlistEditDelete, &QPushButton::clicked, nullptr, nullptr);
+        disconnect(parent->playlistEditList->model(), &QAbstractItemModel::rowsMoved, nullptr, nullptr);
+        disconnect(window->ui->btn_peplay, &QPushButton::clicked, nullptr, nullptr);
+        disconnect(parent->playlistEditList,  &CustomListWidget::OnButton1, nullptr, nullptr);
+        disconnect(parent->playlistEditList,  &CustomListWidget::OnButton2, nullptr, nullptr);
+        disconnect(window->ui->btn_pepshuffle, &QPushButton::clicked, nullptr, nullptr);
+        disconnect(window->ui->checkBox_2, &QCheckBox::stateChanged, nullptr, nullptr);
+        disconnect(window->ui->serachVideo, &QPushButton::clicked, nullptr, nullptr);
+        disconnect(window->ui->searchEdit, &QLineEdit::returnPressed, nullptr, nullptr);
+        disconnect(parent->serachVL, &CustomListWidget::OnButton1, nullptr, nullptr);
+        disconnect(window->ui->playlistEditAdd, &QPushButton::clicked, nullptr, nullptr);
     } catch (...) {
         // Gérer les exceptions si nécessaire
     }
 
     // Connexion des signaux aux slots
-    /*
-    connect(window->ui->playlistEditName, &QLineEdit::textChanged, this, &playlist_item::getNewName);
-    connect(window->ui->playlistEditList->model(), &QAbstractItemModel::rowsMoved, this, &playlist_item::updateList);
-    connect(window->ui->playlistEditChangeImage, &QPushButton::clicked, this, &playlist_item::handlerCI);
-    connect(window->ui->playlistEditDelete, &QPushButton::clicked, this, [=]() { deletePlaylist(); });
-    */
-    connect(window->ui->btn_peplay, &QPushButton::clicked, this, &playlist_item::play);
 
-    //connect(window->ui->btn_pepshuffle, &QPushButton::clicked, this, &playlist_item::shuffle);
-    //parent->playlistEditList->addListener(updateList,playAt);
-    parent->playlistEditList->addListener(
-        std::bind(&playlist_item::updateList, this),
-        std::bind(&playlist_item::playAt, this, std::placeholders::_1)
-        );
-    /*
+    connect(window->ui->playlistEditName, &QLineEdit::textChanged, this, &playlist_item::getNewName);
+    connect(window->ui->playlistEditChangeImage, &QPushButton::clicked, this, &playlist_item::handlerCI);
+    connect(window->ui->playlistEditDelete, &QPushButton::clicked, this, &playlist_item::deletePlaylist);
+    connect(parent->playlistEditList->model(), &QAbstractItemModel::rowsMoved , this, &playlist_item::updateList);
+    connect(window->ui->btn_peplay, &QPushButton::clicked, this, &playlist_item::play);
+    connect(parent->playlistEditList, &CustomListWidget::OnButton1, this, &playlist_item::playAt);
+    connect(parent->playlistEditList, &CustomListWidget::OnButton2, this, &playlist_item::deleteVid);
+    connect(window->ui->btn_pepshuffle, &QPushButton::clicked, this, &playlist_item::shuffle);
     connect(window->ui->checkBox_2, &QCheckBox::stateChanged, this, &playlist_item::handleShuffle);
     connect(window->ui->serachVideo, &QPushButton::clicked, this, &playlist_item::searchAVideo);
     connect(window->ui->searchEdit, &QLineEdit::returnPressed, this, &playlist_item::searchAVideo);
+    connect(parent->serachVL, &CustomListWidget::OnButton1, this, &playlist_item::addNewVideo);
     connect(window->ui->playlistEditAdd, &QPushButton::clicked, this, &playlist_item::handlerNM);
-    */
 
     // Mise à jour de l'interface utilisateur
     //window->ui->serachVL->clear();
@@ -185,22 +221,33 @@ void playlist_item::modify() {
     QString styleSheet = QString("border-radius: 15px; border-image: url(\"%1\") 0 0 0 0 stretch stretch")
                              .arg(thumbUrl);
     window->ui->playlistEditImage->setStyleSheet(styleSheet);
+    qRegisterMetaType<yt_music>("yt_music");
 
     for (const auto& music : musicsI) {
-        qRegisterMetaType<yt_music>("yt_music");
+        QString texteametre;
+        int maxcara = 60;
+        QString a = QString("    %1 - By %2").arg(music->title).arg(music->author);
+        if (a.length() > maxcara) {
+            int tm = maxcara - (a.length() - music->title.length());
+            QString shortText = music->title.left(tm) + "...";
+            texteametre = QString("    %1 - By %2").arg(shortText).arg(music->author);
+        } else {
+            texteametre = QString("    %1 - By %2").arg(music->title).arg(music->author);
+        }
+        //qRegisterMetaType<yt_music>("yt_music");
         // Encapsulation des données dans un QVariant contenant une QList<QVariant>
         QVariant data = QVariant::fromValue(QList<QVariant>{
-            QVariant::fromValue(music),
-            QVariant::fromValue(music->title),
-            QVariant::fromValue(music->author),
-            QVariant::fromValue(il->get(music->thumb))
+            QVariant::fromValue(QString(":/16x16/icons/16x16/cil-media-play.png")),
+            QVariant::fromValue(QString(":/20x20/icons/20x20/cil-x-circle.png")),
+            QVariant::fromValue(QString("")),
+            QVariant::fromValue(texteametre),
+            QVariant::fromValue(il->get(music->thumb)),
+            QVariant::fromValue(QString("")),
+            QVariant::fromValue(music)
         });
 
-        // Créez l'élément de la QListWidget et y associez les données encapsulées
         QListWidgetItem* item = new QListWidgetItem();
         item->setData(Qt::UserRole, data);
-        QVariant retrievedData = item->data(Qt::UserRole);
-        qInfo() << retrievedData;
         parent->playlistEditList->addItem(item);
 
     }
@@ -212,8 +259,209 @@ void playlist_item::updateList() {
 }
 
 void playlist_item::playAt(QListWidgetItem* wo) {
-    qInfo() << "dd";
     int row = parent->playlistEditList->row(wo);
     mp->add_and_play(musicsI.mid(row));
+}
+
+void playlist_item::getNewName(const QString& text) {
+    nameI = text;
+    plname->setText(text);
+    //save();
+}
+
+void playlist_item::handleShuffle() {
+    doShuffle = window->ui->checkBox_2->isChecked();
+    //qInfo() << doShuffle;
+}
+
+void playlist_item::handlerCI() {
+    bool ok;
+    QString name = QInputDialog::getText(
+        window->ui->frame_main,
+        tr("Deltaplayer Dialog"),
+        tr("Please give an image URL for the new thumbnail:"),
+        QLineEdit::Normal,
+        QString(),
+        &ok
+        );
+
+    if (ok) {
+        getNewImage(name);
+    }
+}
+
+
+void playlist_item::handlerNM() {
+    bool ok;
+    QString name = QInputDialog::getText(
+        window->ui->frame_main,
+        tr("Deltaplayer Dialog"),
+        tr("Please give a Youtube Playlist url to import (This can took a while !) : "),
+        QLineEdit::Normal,
+        QString(),
+        &ok
+        );
+
+    if (ok) {
+        //getNewImage(name);
+    }
+}
+
+void playlist_item::getNewImage(QString text) {
+
+    thumbI = text;
+    thumbUrl = il->get(thumbI);
+    PlaylistTemplate->setStyleSheet(QString(
+                                            "#PlaylistTemplate {\n"
+                                            "  background-color: rgb(39, 44, 54);\n"
+                                            "  border-radius: 15px;\n"
+                                            "  border-image: url(\"%1\") 0 0 0 0 stretch stretch;\n"
+                                            "  background-repeat: no-repeat;\n"
+                                            "  border: none;\n"
+                                            "}"
+                                            ).arg(thumbUrl));
+    window->ui->playlistEditImage->setStyleSheet(QString(
+                                                 "border-radius: 15px;\n"
+                                                 "border-image: url(\"%1\") 0 0 0 0 stretch stretch"
+                                                 ).arg(thumbUrl));
+}
+
+void playlist_item::deletePlaylist() {
+    if (!askUserConfirmation()) {return;}
+    // Retirer PlaylistTemplate de son parent
+    this->PlaylistTemplate->setParent(nullptr);
+
+    // Changer le widget courant du stackedWidget
+    window->ui->stackedWidget->setCurrentWidget(window->ui->page_playlists);
+
+    // Retirer l'élément de la liste des playlists
+    auto& playlists = parent->playlists; // Assurez-vous que 'playlists' est bien défini et accessible
+    playlists.removeOne(this);
+
+    // Supprimer l'objet
+    delete this;
+}
+
+void playlist_item::searchAVideo() {
+    //window->ui->serachVL->clear();
+    qInfo("Start query");
+
+    // Obtenez les termes de recherche depuis le QLineEdit
+    QString searchQuery = window->ui->searchEdit->text();
+
+    // Instanciez la classe YoutubeSearch avec les termes de recherche et un nombre maximal de résultats
+    YoutubeSearch *search =  new YoutubeSearch(searchQuery, 5);
+    connect(search, &YoutubeSearch::onComplete, this, &playlist_item::showSearch);
+       // Recherche avec un maximum de 5 résultats
+    search->search();
+    // Récupérez les résultats en format dictionnaire
+
+
+        //qDebug() << "Results in JSON format:" << search->toJson();// Assurez-vous que `toDict()` retourne les données au bon format
+
+    // Traitez les résultats comme vous le souhaitez
+    //delete search;
+}
+
+void playlist_item::showSearch(YoutubeSearch* sh) {
+    disconnect(sh, &YoutubeSearch::onComplete, this, &playlist_item::showSearch);
+    //Debug() << "Results in dictionary format:" << sh->toDict();
+    parent->serachVL->clear();
+
+    // Exécuter la recherche YouTube et récupérer les résultats
+
+    for (auto v : sh->toDict()) {
+        QJsonObject video = v.toObject();
+
+        QString thumbnails = video["thumbnails"].toArray()[0].toString();
+        QString tit = video["title"].toString();
+        QString channel = video["channel"].toString();
+        QString ideh = video["id"].toString();
+
+
+        QString texteametre;
+        int maxcara = 60;
+        QString a = QString("    %1 - By %2").arg(tit).arg(channel);
+        if (a.length() > maxcara) {
+            int tm = maxcara - (a.length() - tit.length());
+            QString shortText = tit.left(tm) + "...";
+            texteametre = QString("    %1 - By %2").arg(shortText).arg(channel);
+        } else {
+            texteametre = QString("    %1 - By %2").arg(tit).arg(channel);
+        }
+
+        QVariant data = QVariant::fromValue(QList<QVariant>{
+            QVariant::fromValue(QString(":/16x16/icons/16x16/cil-plus.png")),
+            QVariant::fromValue(QString("")),
+            QVariant::fromValue(QString("")),
+            QVariant::fromValue(QString(texteametre)),
+            QVariant::fromValue(il->get(thumbnails)),
+            QVariant::fromValue(QString(ideh)),
+        });
+
+        QListWidgetItem* itembis = new QListWidgetItem();
+        itembis->setData(Qt::UserRole, data);
+        parent->serachVL->addItem(itembis);
+    }
+}
+
+void playlist_item::addNewVideo(QListWidgetItem* wo) {
+    QVariant data = wo->data(Qt::UserRole);
+    QList<QVariant> dataList = data.toList();
+    if (wo && data.isValid()) {//if (item && !itemWidget(item) && data.isValid()) {
+        QString id = dataList[5].toString();
+        std::map<QString, QString> dataoo;
+        yt_music *music = new yt_music(parent->ytPath,"https://www.youtube.com/watch?v="+id,dataoo);
+        musicsI.append(music);
+        QString texteametre;
+        int maxcara = 60;
+        QString a = QString("    %1 - By %2").arg(music->title).arg(music->author);
+        if (a.length() > maxcara) {
+            int tm = maxcara - (a.length() - music->title.length());
+            QString shortText = music->title.left(tm) + "...";
+            texteametre = QString("    %1 - By %2").arg(shortText).arg(music->author);
+        } else {
+            texteametre = QString("    %1 - By %2").arg(music->title).arg(music->author);
+        }
+        //qRegisterMetaType<yt_music>("yt_music");
+        // Encapsulation des données dans un QVariant contenant une QList<QVariant>
+        QVariant data = QVariant::fromValue(QList<QVariant>{
+            QVariant::fromValue(QString(":/16x16/icons/16x16/cil-media-play.png")),
+            QVariant::fromValue(QString(":/20x20/icons/20x20/cil-x-circle.png")),
+            QVariant::fromValue(QString("")),
+            QVariant::fromValue(texteametre),
+            QVariant::fromValue(il->get(music->thumb)),
+            QVariant::fromValue(QString("")),
+            QVariant::fromValue(music)
+        });
+
+        QListWidgetItem* item = new QListWidgetItem();
+        item->setData(Qt::UserRole, data);
+        parent->playlistEditList->addItem(item);
+    }
+}
+
+void playlist_item::deleteVid(QListWidgetItem* wo) {
+    qInfo("aaa");
+    int row = parent->playlistEditList->row(wo);
+    parent->playlistEditList->takeItem(row);
+    musicsI = parent->playlistEditList->getNewList();
+}
+
+
+QJsonObject playlist_item::save() {
+    QJsonArray musicsArray;
+    for (const auto& music : musicsI) {
+        musicsArray.append(music->save());
+    }
+
+    QJsonObject jsonObject;
+    jsonObject["name"] = nameI;
+    jsonObject["musics"] = musicsArray;
+    jsonObject["thumb"] = thumbI;
+    jsonObject["plid"] = plid;
+    jsonObject["doShuffle"] = doShuffle;
+
+    return jsonObject;
 }
 

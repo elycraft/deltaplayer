@@ -5,8 +5,8 @@
 #include <string>
 
 
-yt_music::yt_music(QString urlin, std::map<QString, QString> data) {
-    std::string ytDlpPath = "C:/Users/raphb/Documents/Deltaplayer2/yt-dlp.exe";
+yt_music::yt_music(QString ytDlpPathin, QString urlin, std::map<QString, QString> data) {
+    std::string ytDlpPath = "";//ytDlpPathin.toStdString();
     if (data.size() != 0) {
         id = data["id"];
         furl = data["furl"];
@@ -21,13 +21,14 @@ yt_music::yt_music(QString urlin, std::map<QString, QString> data) {
 
         QJsonDocument doc = QJsonDocument::fromJson(infos.c_str());
         QJsonObject video = doc.object();
-
+        //qInfo("jj");
         //qInfo() << video;
 
         id = video["id"].toString();
         furl = urlin;
         title = video["title"].toString();
         duration = video["duration"].toInt();
+        //qInfo()<<video["duration"].toString();
 
         QJsonArray thumbnailsArray = video["thumbnails"].toArray();
         if (thumbnailsArray.size() > 1) {
@@ -46,7 +47,6 @@ QString yt_music::print() {
 }
 
 QString yt_music::get_url() {
-    std::string ytDlpPath = "C:/Users/raphb/Documents/Deltaplayer2/yt-dlp.exe";
     std::string getCommand = ytDlpPath + " --no-warnings --dump-json " + furl.toStdString();
     infos = execAndCaptureOutput(getCommand);
     QJsonDocument doc = QJsonDocument::fromJson(infos.c_str());
@@ -137,3 +137,16 @@ std::string yt_music::execAndCaptureOutput(const std::string& cmd) {
 
     return output;
 }
+
+QJsonObject yt_music::save() {
+    QJsonObject jsonObject;
+    jsonObject["id"] = id;
+    jsonObject["furl"] = furl;
+    jsonObject["title"] = title;
+    jsonObject["length"] = QString::number(duration);
+    jsonObject["thumb"] = thumb;
+    jsonObject["author"] = author;
+
+    return jsonObject;
+}
+

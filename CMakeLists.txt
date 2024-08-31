@@ -40,6 +40,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         playlist_item.h playlist_item.cpp
         customlistwidget.h customlistwidget.cpp
         draggableitem.h draggableitem.cpp
+        exitprogram.h exitprogram.cpp
+        youtubesearch.h youtubesearch.cpp
 
 
     )

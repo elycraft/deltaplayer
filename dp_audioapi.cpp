@@ -50,8 +50,20 @@ void dp_audioapi::setVolume(int vol) {
 }
 
 void dp_audioapi::play_queue() {
+
+
     if (queue.size() == 0) { return;}
-    if (isPlaying == true) {return;}
+    if (isPlaying == true) {
+        //qInfo()<< current->duration;
+        //qInfo()<< player->position();
+        if (player->position() >= (current->duration-1)*1000) {
+            isPlaying = false;
+            paused = true;
+        }
+        else {
+            return;
+        }
+    }
     play(queue.front());
     queue.pop_front();
     emit hasToUpdate();
@@ -62,7 +74,9 @@ void dp_audioapi::add_to_queue(yt_music* mus) {
 }
 
 void dp_audioapi::add_and_play(QList<yt_music*> mus) {
-    for (yt_music* item : mus) {
+    QList<yt_music*> mus1 = mus;
+    std::reverse(mus1.begin(), mus1.end());
+    for (yt_music* item : mus1) {
         queue.push_front(item);
     }
     stop();

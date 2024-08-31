@@ -19,9 +19,14 @@ playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin) {
     il = new ImageLoader(fm);
     mp = mpin;
 
+    ytPath = QDir::currentPath()+"/yt-dlp.exe";
+    qInfo() << ytPath;
+    ui->pathToYt->setText(ytPath);
 
 
 
+
+    //////////////////////////////////////////////////////
     playlistEditList = new CustomListWidget(ui->verticalFrame1);
     playlistEditList->setDragDropMode(QAbstractItemView::InternalMove);
     playlistEditList->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -44,6 +49,35 @@ playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin) {
     scrollArea->setWidget(scrollAreaWidgetContents);
 
     ui->verticalLayout_10->addWidget(scrollArea);
+    /////////////////////////////////////////////////////
+    ///     //////////////////////////////////////////////////////
+    ///
+
+    serachVL = new CustomListWidget(ui->serachVideoFrame);
+    serachVL->setDragDropMode(QAbstractItemView::InternalMove);
+    serachVL->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    serachVL->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
+    // Set stylesheet and object name
+    serachVL->setStyleSheet("border: 0px; background: transparent");
+    serachVL->setObjectName("playlistEditList");
+
+    // Add CustomListWidget to the vertical layout
+    ui->verticalLayout_21->addWidget(serachVL);
+
+    // Create a QScrollArea
+    scrollAreaserachVL = new QScrollArea(serachVL);
+    scrollAreaserachVL->setWidgetResizable(true);
+    scrollAreaserachVL->setStyleSheet("border-radius: 0px;");
+
+    scrollAreaWidgetContentsserachVL = new QWidget();
+    scrollAreaserachVL->setWidget(scrollAreaWidgetContentsserachVL);
+
+    //ui->verticalLayout_10->addWidget(scrollAreaserachVL);  // A CORIGE
+
+    /////////////////////////////////////////////////////
+
+
 
     nextPos = new pos(0,0);
 
@@ -80,7 +114,7 @@ void playlist_manager::addBtnAdd() {
 
     gridLayoutPlay->addWidget(AddPlaylist, 0, 0);
 
-    //connect(btn_addplaylist, &QPushButton::clicked, this, &MainWindow::newPlaylist);
+    connect(btn_addplaylist, &QPushButton::clicked, this, &playlist_manager::newPlaylist);
 }
 
 QJsonArray playlist_manager::load() {
@@ -112,6 +146,29 @@ QJsonArray playlist_manager::load() {
     return QJsonArray(); // Retourne un tableau vide en cas d'échec
 }
 
+void playlist_manager::save() {
+    QJsonArray rawPlaylistse = QJsonArray();  // Réinitialiser la liste des playlists JSON
+
+    // Parcourir toutes les playlists et les sauvegarder en JSON
+    for (playlist_item *pl : playlists) {
+        rawPlaylistse.append(pl->save());  // Sauvegarder chaque playlist en tant que QJsonObject
+    }
+
+    // Chemin vers le fichier JSON
+    QString filePath = QDir(fm->userDataDir).filePath("playlists.json");
+
+    // Ouvrir le fichier en écriture
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly)) {
+        // Créer un document JSON et l'écrire dans le fichier
+        QJsonDocument jsonDoc(rawPlaylistse);
+        file.write(jsonDoc.toJson(QJsonDocument::Indented));  // Indentation pour une meilleure lisibilité
+        file.close();
+    } else {
+        qWarning() << "Impossible d'ouvrir le fichier pour écrire:" << filePath;
+    }
+}
+
 void playlist_manager::drawPlaylists() {
     for (const auto& pl : raw_playlists) {
 
@@ -132,6 +189,26 @@ void playlist_manager::drawPlaylists() {
         //mapping[pl["plid"].toString()] = n;
         playlists.last()->create();
     }
+}
+
+void playlist_manager::newPlaylist() {
+    QJsonArray* ab = new QJsonArray();
+    QString timestamp = QString::fromStdString(std::to_string(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())));
+    playlist_item* n = new playlist_item(
+        "New Playlist",
+        *ab,
+        "https://cdn.pixabay.com/photo/2018/08/14/09/59/mountains-3605113_1280.jpg",
+        timestamp,
+        gridLayoutPlay,
+        scrollArea,
+        mp,
+        window,
+        this,
+        false
+        );
+    playlists.append(n);
+    playlists.last()->create();
+    playlists.last()->modify();
 }
 
 pos* playlist_manager::getNewPos() {

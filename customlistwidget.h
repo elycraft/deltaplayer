@@ -33,7 +33,10 @@ public:
     CustomListWidget(QWidget *wid, QWidget *parent = nullptr );
 
 signals:
-    void hasPlayAt(QListWidgetItem* wo);
+    void OnButton1(QListWidgetItem* wo);
+    void OnButton2(QListWidgetItem* wo);
+    void OnButton3(QListWidgetItem* wo);
+    void onRow();
 
 protected:
     void dragMoveEvent(QDragMoveEvent *event) override;
@@ -44,9 +47,11 @@ private slots:
 public:
     QList<yt_music*> getNewList();
     void deleteMe(QListWidgetItem *item);
-    void addListener(std::function<void()> fct, std::function<void(QListWidgetItem*)> fct2);
-    void removeListener();
-    void dplay_btn(QListWidgetItem *item);
+    //void addListener(std::function<void()> fct, std::function<void(QListWidgetItem*)> fct2);
+    //void removeListener();
+    void button1(QListWidgetItem *item);
+    void button2(QListWidgetItem *item);
+    void button3(QListWidgetItem *item);
 
 private:
     QWidget *wid;

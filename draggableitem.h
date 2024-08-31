@@ -11,24 +11,26 @@
 #include <QPixmap>
 #include <QSize>
 #include <QFont>
-#include "yt_music.h"
 
 class DraggableItem : public QWidget {
     Q_OBJECT
 
 public:
-    explicit DraggableItem(QWidget *parent = nullptr);
+    explicit DraggableItem(QString b1, QString b2, QString b3, QWidget *parent = nullptr);
 
-    void setTexte(const QString &text1, const QString &text2);
-    void setIcone(const QString &imagePath);
-    void setId(yt_music* id);
-    QPushButton *dplay;
+    void setDText(const QString &text1);
+    void setThumb(const QString &imagePath);
+    void setId(QString id);
+    void setDFormat(QString b1, QString b2, QString b3);
+    QPushButton *fbutton1;
+    QPushButton *fbutton2;
+    QPushButton *fbutton3;
 
 private:
-    yt_music* id;
+    QString id;
     QFrame *nwidget;
-    QLabel *label_3;
-    QLabel *label;
+    QLabel *thumb;
+    QLabel *dtext;
 
     QPushButton *deletetkt;
     QWidget *pere;

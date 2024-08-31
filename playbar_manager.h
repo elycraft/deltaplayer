@@ -18,6 +18,7 @@ class playbar_manager : public QObject
 public:
     playbar_manager(MainWindowt* mainWindow);
     void update_ui();
+
     dp_audioapi* mp;
 
 

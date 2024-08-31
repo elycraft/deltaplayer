@@ -13,6 +13,9 @@
 #include "QLayout"
 #include "QFrame"
 #include "QListWidgetItem"
+#include "QInputDialog"
+#include "QMessageBox"
+#include "youtubesearch.h"
 
 class playlist_manager;
 
@@ -24,11 +27,15 @@ public:
     void create();
     void modify();
     void updateList();
+    QJsonObject save();
+
 
 
 
 public slots:
     void playAt(QListWidgetItem* wo);
+    void addNewVideo(QListWidgetItem* wo);
+    void deleteVid(QListWidgetItem* wo);
 
 private:
     QString nameI;
@@ -47,7 +54,15 @@ private:
     QString thumbUrl;
     QList<yt_music*> getRealPlaylist(const QJsonArray& fromjson);
     void play();
-
+    void handleShuffle();
+    void handlerCI();
+    void getNewImage(QString text);
+    void deletePlaylist();
+    void shuffle();
+    void autoplay();
+    void searchAVideo();
+    void showSearch(YoutubeSearch* sh);
+    void handlerNM();
 
     QFrame *PlaylistTemplate;
     QVBoxLayout *verticalLayout_13;
@@ -56,6 +71,9 @@ private:
     QHBoxLayout *optionLayout;
     QLabel *plname;
     QPushButton *modifyPlaylist;
+
+    void getNewName(const QString& text);
+
 
 
 

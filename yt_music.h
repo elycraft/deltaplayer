@@ -12,7 +12,7 @@ class yt_music
 {
 
 public:
-    yt_music(QString url = "", std::map<QString, QString>  data = {});
+    yt_music(QString ytDlpPathin, QString url = "", std::map<QString, QString>  data = {});
 
     QString id;
     QString furl;
@@ -24,6 +24,7 @@ public:
 
     QString print();
     QString get_url();
+    QJsonObject save();
 
 
 private:

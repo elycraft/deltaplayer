@@ -1,6 +1,7 @@
 #include "playbar_manager.h"
 #include "GUI_BASE.h"
 #include "./ui_GUI_BASE.h"
+#include "qdir.h"
 
 QString maxlen(const QString& s, int l) {
     if (s.length() > l) {
@@ -27,8 +28,10 @@ playbar_manager::playbar_manager(MainWindowt* mainWindow) {
     mp = new dp_audioapi();
     il = new ImageLoader();
 
+
     connect(ui->btn_pause, &QPushButton::clicked, this, &playbar_manager::btnPause);
     connect(ui->btn_rewind, &QPushButton::clicked, this, &playbar_manager::btnRewind);
+    connect(ui->btn_skip, &QPushButton::clicked, this, &playbar_manager::btnSkip);
     connect(mp->player, &QMediaPlayer::positionChanged, this, &playbar_manager::update_time);
     connect(ui->soundSlider, &QSlider::valueChanged, this, &playbar_manager::slider_sound);
     connect(mp, &dp_audioapi::hasToUpdate, this, &playbar_manager::update_ui);
@@ -65,7 +68,7 @@ void playbar_manager::btnRewind() {
 }
 
 void playbar_manager::btnSkip() {
-
+    mp->stop();
 }
 
 void playbar_manager::update_ui() {

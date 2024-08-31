@@ -20,7 +20,7 @@ CustomListWidget::CustomListWidget(QWidget *wid, QWidget *parent )
 void CustomListWidget::handleRowsInserted(const QModelIndex &parent, int first, int last) {
     for (int index = first; index <= last; ++index) {
         QListWidgetItem *item = this->item(index);
-        qInfo() << "cl";
+        //qInfo() << "cl";
 
         QVariant data = item->data(Qt::UserRole);
         //qInfo() << data;
@@ -33,19 +33,21 @@ void CustomListWidget::handleRowsInserted(const QModelIndex &parent, int first, 
 
         if (item && !itemWidget(item) && data.isValid()) {//if (item && !itemWidget(item) && data.isValid()) {
 
-            yt_music* id = dataList[0].value<yt_music*>();
-            QString title = dataList[1].toString();
-            QString author = dataList[2].toString();
-            QString thumb = dataList[3].toString();
+            QString c1 = dataList[0].toString();
+            QString c2 = dataList[1].toString();
+            QString c3 = dataList[2].toString();
+            QString texte = dataList[3].toString();
+            QString thumb = dataList[4].toString();
+            QString id = dataList[5].toString();
 
-            DraggableItem *widgete = new DraggableItem(this); // Assuming 'wid' is a QWidget derived class
-            // Setup widget with data
-            widgete->setTexte(title, author);
-            widgete->setIcone(thumb);
+            DraggableItem *widgete = new DraggableItem(c1,c2,c3,this); // Assuming 'wid' is a QWidget derived class
+            widgete->setDText(texte);
+            widgete->setThumb(thumb);
             widgete->setId(id);
 
-            connect(widgete->findChild<QPushButton*>("deletetkt"), &QPushButton::clicked, [this, item]() { deleteMe(item); });
-            connect(widgete->dplay, &QPushButton::clicked, [this, item]() { CustomListWidget::dplay_btn(item); } );
+            connect(widgete->fbutton1, &QPushButton::clicked, [this, item]() { CustomListWidget::button1(item); } );
+            connect(widgete->fbutton2, &QPushButton::clicked, [this, item]() { CustomListWidget::button2(item); } );
+            connect(widgete->fbutton3, &QPushButton::clicked, [this, item]() { CustomListWidget::button3(item); } );
 
             item->setSizeHint(widgete->sizeHint());
             table[widgete] = item;
@@ -56,13 +58,14 @@ void CustomListWidget::handleRowsInserted(const QModelIndex &parent, int first, 
 }
 
 void CustomListWidget::dragMoveEvent(QDragMoveEvent *event) {
-    int target = row(itemAt(event->pos()));
+    int target = row(itemAt(event->position().toPoint()));
     int current = currentRow();
 
     if ((target == current + 1) || (current == count() - 1 && target == -1)) {
         event->ignore();
     } else {
         QListWidget::dragMoveEvent(event);
+
     }
 }
 
@@ -71,32 +74,23 @@ QList<yt_music*> CustomListWidget::getNewList() {
     for (int i = 0; i < count(); ++i) {
         QListWidgetItem *item = this->item(i);
         QList<QVariant> dataList = item->data(Qt::UserRole).toList();;
-        yt_music* id = dataList[0].value<yt_music*>();
+        yt_music* id = dataList[6].value<yt_music*>();
         nl.append(id);
 
     }
     return nl;
 }
 
-void CustomListWidget::deleteMe(QListWidgetItem *item) {
-    takeItem(row(item));
-    if (listener) {
-        listener();
-    }
+void CustomListWidget::button1(QListWidgetItem *item) {
+    emit this->OnButton1(item);
 }
 
-void CustomListWidget::dplay_btn(QListWidgetItem *item) {
-    qInfo() << item;
-    emit this->hasPlayAt(item);
+void CustomListWidget::button2(QListWidgetItem *item) {
+    emit this->OnButton2(item);
 
 }
 
-void CustomListWidget::addListener(std::function<void()> fct, std::function<void(QListWidgetItem*)> fct2) {
-    listener = fct;
-    listener2 = fct2;
-}
+void CustomListWidget::button3(QListWidgetItem *item) {
+    emit this->OnButton3(item);
 
-void CustomListWidget::removeListener() {
-    listener = nullptr;
-    listener2 = nullptr;
 }

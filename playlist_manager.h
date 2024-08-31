@@ -27,6 +27,10 @@ public:
     playlist_manager(MainWindowt* mainWindow,dp_audioapi* mpin);
     pos* getNewPos();
     CustomListWidget *playlistEditList;
+    CustomListWidget *serachVL;
+    QList<playlist_item*> playlists;
+    void save();
+    QString ytPath;
 
 private:
     FileManager* fm;
@@ -34,10 +38,11 @@ private:
     MainWindowt* window;
     dp_audioapi* mp;
     QJsonArray raw_playlists;
-    QList<playlist_item*> playlists;
+
     void addBtnAdd();
     QJsonArray load();
     void drawPlaylists();
+    void newPlaylist();
     pos* nextPos;
 
     QScrollArea *scrollArea;
@@ -46,6 +51,9 @@ private:
     QVBoxLayout *AddPlaylistLayout;
     QPushButton *btn_addplaylist;
     QGridLayout *gridLayoutPlay;
+
+    QScrollArea *scrollAreaserachVL;
+    QWidget *scrollAreaWidgetContentsserachVL;
 
 
 
