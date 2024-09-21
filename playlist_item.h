@@ -71,6 +71,7 @@ private:
     QHBoxLayout *optionLayout;
     QLabel *plname;
     QPushButton *modifyPlaylist;
+    QString ytPath;
 
     void getNewName(const QString& text);
 

@@ -44,21 +44,23 @@ QList<QJsonObject> jsonArrayToList(const QJsonArray& array) {
 playlist_item::playlist_item(QString namein,QJsonArray musicsin,QString thumbin, QString plidin,QGridLayout* layoutin, QScrollArea* gridFramein, dp_audioapi* mpin, MainWindowt* windowin,playlist_manager* parentin ,bool doShufflein) {
     nameI = namein;
     raw_musics = musicsin;
-    musicsI = getRealPlaylist(musicsin);
+    parent = parentin;
+    ytPath=parent->ytPath;
+
     plid = plidin;
     layout = layoutin;
     gridFrame = gridFramein;
     mp = mpin;
     window = windowin;
-    parent = parentin;
+
     doShuffle = doShufflein;
     fm = new FileManager();
     il = new ImageLoader();
-
-
-
     thumbI = thumbin;
     thumbUrl = il->get(thumbI);
+
+    musicsI = getRealPlaylist(musicsin);
+
 
 
 
@@ -149,7 +151,7 @@ QList<yt_music*> playlist_item::getRealPlaylist(const QJsonArray& fromjson) {
             for (auto it = obj.begin(); it != obj.end(); ++it) {
                 data[it.key()] = it.value().toString();
             }
-            yt_music* idwin = new yt_music(parent->ytPath, "", data);
+            yt_music* idwin = new yt_music(ytPath, "", data);
 
             // Créer un objet yt_music avec data et un urlin vide
             result.append(idwin);
@@ -411,7 +413,7 @@ void playlist_item::addNewVideo(QListWidgetItem* wo) {
     if (wo && data.isValid()) {//if (item && !itemWidget(item) && data.isValid()) {
         QString id = dataList[5].toString();
         std::map<QString, QString> dataoo;
-        yt_music *music = new yt_music(parent->ytPath,"https://www.youtube.com/watch?v="+id,dataoo);
+        yt_music *music = new yt_music(ytPath,"https://www.youtube.com/watch?v="+id,dataoo);
         musicsI.append(music);
         QString texteametre;
         int maxcara = 60;

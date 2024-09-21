@@ -27,6 +27,7 @@ public:
     QJsonObject save();
 
 
+
 private:
     std::wstring stringToWstring(const std::string& str);
     std::string execAndCaptureOutput(const std::string& cmd);

@@ -6,7 +6,8 @@
 
 
 yt_music::yt_music(QString ytDlpPathin, QString urlin, std::map<QString, QString> data) {
-    std::string ytDlpPath = "";//ytDlpPathin.toStdString();
+    ytDlpPath = ytDlpPathin.toStdString();
+
     if (data.size() != 0) {
         id = data["id"];
         furl = data["furl"];

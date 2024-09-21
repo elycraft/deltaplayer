@@ -42,6 +42,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         draggableitem.h draggableitem.cpp
         exitprogram.h exitprogram.cpp
         youtubesearch.h youtubesearch.cpp
+        settingmanager.h settingmanager.cpp
+        cmdworker.h cmdworker.cpp
 
 
     )

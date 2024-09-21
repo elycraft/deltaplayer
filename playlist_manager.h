@@ -10,6 +10,7 @@
 #include "playlist_item.h"
 #include "customlistwidget.h"
 #include "DraggableItem.h"
+#include "settingmanager.h"
 
 class pos {
 public:
@@ -24,7 +25,7 @@ class playlist_manager : public QObject
 
 Q_OBJECT
 public:
-    playlist_manager(MainWindowt* mainWindow,dp_audioapi* mpin);
+    playlist_manager(MainWindowt* mainWindow,dp_audioapi* mpin, SettingManager* smin);
     pos* getNewPos();
     CustomListWidget *playlistEditList;
     CustomListWidget *serachVL;
@@ -38,6 +39,7 @@ private:
     MainWindowt* window;
     dp_audioapi* mp;
     QJsonArray raw_playlists;
+    SettingManager* sm;
 
     void addBtnAdd();
     QJsonArray load();

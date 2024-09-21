@@ -11,17 +11,17 @@ pos::pos(int xin, int yin) {
 
 
 
-playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin) {
+playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin, SettingManager* smin) {
 
     window = mainWindow;
     auto ui = mainWindow->ui;
     fm = new FileManager();
     il = new ImageLoader(fm);
     mp = mpin;
+    sm = smin;
+    ytPath = sm->getSetting("ytpath").toString();
 
-    ytPath = QDir::currentPath()+"/yt-dlp.exe";
-    qInfo() << ytPath;
-    ui->pathToYt->setText(ytPath);
+
 
 
 

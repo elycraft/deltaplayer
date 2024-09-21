@@ -10,13 +10,14 @@
 #include "QScrollArea"
 #include "QVBoxLayout"
 #include "QPushButton"
+#include "settingmanager.h"
 
 
 
 class playbar_manager : public QObject
 {
 public:
-    playbar_manager(MainWindowt* mainWindow);
+    playbar_manager(MainWindowt* mainWindow, SettingManager* smin);
     void update_ui();
 
     dp_audioapi* mp;
@@ -37,6 +38,7 @@ private:
     MainWindowt* window;// Pointeur vers MainWindowt
 
     ImageLoader* il;
+    SettingManager* sm;
 
 
 

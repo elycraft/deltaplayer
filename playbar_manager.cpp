@@ -21,12 +21,13 @@ QString formatDuration(qint64 durationInSeconds) {
 }
 
 
-playbar_manager::playbar_manager(MainWindowt* mainWindow) {
+playbar_manager::playbar_manager(MainWindowt* mainWindow, SettingManager *smin) {
     window = mainWindow;
     auto ui = mainWindow->ui;
 
     mp = new dp_audioapi();
     il = new ImageLoader();
+    sm = smin;
 
 
     connect(ui->btn_pause, &QPushButton::clicked, this, &playbar_manager::btnPause);
@@ -40,8 +41,9 @@ playbar_manager::playbar_manager(MainWindowt* mainWindow) {
     ui->Bar->setValue(0);
     ui->Bar->setFormat(":/:");
 
-    mp->setVolume(50);
-    ui->soundSlider->setValue(50);
+    int vol  = sm->getSetting("volume").toInt();
+    mp->setVolume(vol);
+    ui->soundSlider->setValue(vol);
 }
 
 void playbar_manager::btnPause() {
