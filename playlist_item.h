@@ -16,6 +16,7 @@
 #include "QInputDialog"
 #include "QMessageBox"
 #include "youtubesearch.h"
+#include "yt_playlist.h"
 
 class playlist_manager;
 
@@ -63,6 +64,7 @@ private:
     void searchAVideo();
     void showSearch(YoutubeSearch* sh);
     void handlerNM();
+    void clearSerachList();
 
     QFrame *PlaylistTemplate;
     QVBoxLayout *verticalLayout_13;

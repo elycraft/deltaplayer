@@ -190,6 +190,7 @@ void playlist_item::modify() {
         disconnect(window->ui->btn_pepshuffle, &QPushButton::clicked, nullptr, nullptr);
         disconnect(window->ui->checkBox_2, &QCheckBox::stateChanged, nullptr, nullptr);
         disconnect(window->ui->serachVideo, &QPushButton::clicked, nullptr, nullptr);
+        disconnect(window->ui->serachClearList, &QPushButton::clicked, nullptr, nullptr);
         disconnect(window->ui->searchEdit, &QLineEdit::returnPressed, nullptr, nullptr);
         disconnect(parent->serachVL, &CustomListWidget::OnButton1, nullptr, nullptr);
         disconnect(window->ui->playlistEditAdd, &QPushButton::clicked, nullptr, nullptr);
@@ -209,13 +210,14 @@ void playlist_item::modify() {
     connect(window->ui->btn_pepshuffle, &QPushButton::clicked, this, &playlist_item::shuffle);
     connect(window->ui->checkBox_2, &QCheckBox::stateChanged, this, &playlist_item::handleShuffle);
     connect(window->ui->serachVideo, &QPushButton::clicked, this, &playlist_item::searchAVideo);
+    connect(window->ui->serachClearList, &QPushButton::clicked, this, &playlist_item::clearSerachList);
     connect(window->ui->searchEdit, &QLineEdit::returnPressed, this, &playlist_item::searchAVideo);
     connect(parent->serachVL, &CustomListWidget::OnButton1, this, &playlist_item::addNewVideo);
     connect(window->ui->playlistEditAdd, &QPushButton::clicked, this, &playlist_item::handlerNM);
 
     // Mise à jour de l'interface utilisateur
     //window->ui->serachVL->clear();
-    window->ui->searchEdit->clear();
+    clearSerachList();
     parent->playlistEditList->clear();
     window->ui->playlistEditName->setText(nameI);
     window->ui->checkBox_2->setChecked(doShuffle);
@@ -305,7 +307,8 @@ void playlist_item::handlerNM() {
         );
 
     if (ok) {
-        //getNewImage(name);
+        yt_playlist a = *new yt_playlist(ytPath);
+        a.get_info("https://www.youtube.com/playlist?list=PLDOjCqYj3ys3TEe8HCR7_cYH7X7dU28_B");
     }
 }
 
@@ -365,6 +368,11 @@ void playlist_item::searchAVideo() {
     //delete search;
 }
 
+void playlist_item::clearSerachList() {
+    parent->serachVL->clear();
+    window->ui->searchEdit->setText("");
+}
+
 void playlist_item::showSearch(YoutubeSearch* sh) {
     disconnect(sh, &YoutubeSearch::onComplete, this, &playlist_item::showSearch);
     //Debug() << "Results in dictionary format:" << sh->toDict();
@@ -375,9 +383,9 @@ void playlist_item::showSearch(YoutubeSearch* sh) {
     for (auto v : sh->toDict()) {
         QJsonObject video = v.toObject();
 
-        QString thumbnails = video["thumbnails"].toArray()[0].toString();
+        QString thumbnail = video["thumbnails"].toArray()[0].toString();
         QString tit = video["title"].toString();
-        QString channel = video["channel"].toString();
+        QString channel = video["author"].toString();
         QString ideh = video["id"].toString();
 
 
@@ -397,8 +405,8 @@ void playlist_item::showSearch(YoutubeSearch* sh) {
             QVariant::fromValue(QString("")),
             QVariant::fromValue(QString("")),
             QVariant::fromValue(QString(texteametre)),
-            QVariant::fromValue(il->get(thumbnails)),
-            QVariant::fromValue(QString(ideh)),
+            QVariant::fromValue(il->get(thumbnail)),
+            QVariant::fromValue(QJsonObject(video)),
         });
 
         QListWidgetItem* itembis = new QListWidgetItem();
@@ -411,9 +419,16 @@ void playlist_item::addNewVideo(QListWidgetItem* wo) {
     QVariant data = wo->data(Qt::UserRole);
     QList<QVariant> dataList = data.toList();
     if (wo && data.isValid()) {//if (item && !itemWidget(item) && data.isValid()) {
-        QString id = dataList[5].toString();
+        QJsonObject video = dataList[5].toJsonObject();
+        //QString id = dataList[5].toString();
         std::map<QString, QString> dataoo;
-        yt_music *music = new yt_music(ytPath,"https://www.youtube.com/watch?v="+id,dataoo);
+        dataoo["title"] = video["title"].toString();
+        dataoo["author"] = video["author"].toString();
+        dataoo["furl"] = "https://www.youtube.com/watch?v="+video["id"].toString();
+        dataoo["id"] = video["id"].toString();
+        dataoo["length"] = video["length"].toString();
+        dataoo["thumb"] = video["thumbnails"].toArray()[0].toString();
+        yt_music *music = new yt_music(ytPath,"",dataoo);
         musicsI.append(music);
         QString texteametre;
         int maxcara = 60;

@@ -74,18 +74,20 @@ void YoutubeSearch::parseHtml(const QString& response) {
             if (res["id"] == "") {continue;}
             QJsonArray thumbnails = video["thumbnail"].toObject().value("thumbnails").toArray();
             QJsonArray thumbArray;
+            //qInfo()<<video;
             for (const QJsonValue& thumb : thumbnails) {
                 thumbArray.append(thumb.toObject().value("url").toString());
             }
             res["thumbnails"] = thumbArray;
             res["title"] = video["title"].toObject().value("runs").toArray().first().toObject().value("text").toString();
             res["long_desc"] = video["descriptionSnippet"].toObject().value("runs").toArray().first().toObject().value("text").toString();
-            res["channel"] = video["longBylineText"].toObject().value("runs").toArray().first().toObject().value("text").toString();
-            res["duration"] = video["lengthText"].toObject().value("simpleText").toString();
+            res["author"] = video["longBylineText"].toObject().value("runs").toArray().first().toObject().value("text").toString();
+            res["length"] = timeStringToSeconds(video["lengthText"].toObject().value("simpleText").toString());
             res["views"] = video["viewCountText"].toObject().value("simpleText").toString();
             res["publish_time"] = video["publishedTimeText"].toObject().value("simpleText").toString();
             res["url_suffix"] = video["navigationEndpoint"].toObject().value("commandMetadata").toObject().value("webCommandMetadata").toObject().value("url").toString();
-            //qInfo() << video.value("videoId").toString();;
+
+            //qInfo() << res;
             videos.append(res);
         }
     }
@@ -108,4 +110,24 @@ void YoutubeSearch::onSearchFinished(QNetworkReply* reply) {
     }
     //qInfo() << "response";
     parseHtml(response);
+}
+
+int YoutubeSearch::timeStringToSeconds(const QString& timeStr) {
+    QStringList timeParts = timeStr.split(":");
+    int seconds = 0;
+
+    if (timeParts.size() == 3) {
+        // Format HH:MM:SS
+        int hours = timeParts[0].toInt();
+        int minutes = timeParts[1].toInt();
+        int secs = timeParts[2].toInt();
+        seconds = hours * 3600 + minutes * 60 + secs;
+    } else if (timeParts.size() == 2) {
+        // Format MM:SS
+        int minutes = timeParts[0].toInt();
+        int secs = timeParts[1].toInt();
+        seconds = minutes * 60 + secs;
+    }
+
+    return seconds;
 }

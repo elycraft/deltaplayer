@@ -1,5 +1,7 @@
 #include "yt_music.h"
 #include <map>
+#include <qeventloop.h>
+#include <qthread.h>
 #include <windows.h>
 #include <iostream>
 #include <string>
@@ -16,29 +18,101 @@ yt_music::yt_music(QString ytDlpPathin, QString urlin, std::map<QString, QString
         thumb = data["thumb"];
         author = data["author"];
     } else {
+        /*
         std::string getCommand = ytDlpPath + " --no-warnings --dump-json " + urlin.toStdString();
         //qInfo() << getCommand;
-        infos = execAndCaptureOutput(getCommand);
+        cmdWorker* worker = new cmdWorker();
+        QThread* thread = new QThread();
 
-        QJsonDocument doc = QJsonDocument::fromJson(infos.c_str());
-        QJsonObject video = doc.object();
-        //qInfo("jj");
-        //qInfo() << video;
+        worker->moveToThread(thread);
 
-        id = video["id"].toString();
-        furl = urlin;
-        title = video["title"].toString();
-        duration = video["duration"].toInt();
-        //qInfo()<<video["duration"].toString();
+        QObject::connect(thread, &QThread::started, [=]() {
+            worker->execAndCaptureOutput(getCommand);  // Appeler doWork avec l'argument
+        });
 
-        QJsonArray thumbnailsArray = video["thumbnails"].toArray();
-        if (thumbnailsArray.size() > 1) {
-            thumb = thumbnailsArray[thumbnailsArray.size() - 2].toObject()["url"].toString();
-        } else {
-            thumb = "";  // Ou une valeur par défaut si nécessaire
-        }
+        QObject::connect(worker, &cmdWorker::resultReady, [this, urlin](const QString& result){
+            infos = result;
+            QJsonDocument doc = QJsonDocument::fromJson(infos.toStdString().c_str());
+            QJsonObject video = doc.object();
+            //qInfo("jj");
+            //qInfo() << video;
 
-        author = video["uploader"].toString();
+            id = video["id"].toString();
+            furl = urlin;
+            title = video["title"].toString();
+            duration = video["duration"].toInt();
+            //qInfo()<<video["duration"].toString();
+
+            QJsonArray thumbnailsArray = video["thumbnails"].toArray();
+            if (thumbnailsArray.size() > 1) {
+                thumb = thumbnailsArray[thumbnailsArray.size() - 2].toObject()["url"].toString();
+            } else {
+                thumb = "";  // Ou une valeur par défaut si nécessaire
+            }
+
+            author = video["uploader"].toString();
+        });
+
+        QObject::connect(worker, &cmdWorker::resultReady, thread, &QThread::quit);
+        QObject::connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+        QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+
+        thread->start();
+
+        ///////////////////////
+
+        std::string getCommand = ytDlpPath + " --no-warnings --dump-json " + furl.toStdString();
+        cmdWorker* worker = new cmdWorker();
+        QThread* thread = new QThread();
+        QEventLoop loop;
+
+        worker->moveToThread(thread);
+
+        // Variable pour stocker l'URL
+        QString resultUrl;
+
+        // Connecter pour exécuter la commande quand le thread commence
+        QObject::connect(thread, &QThread::started, [=]() {
+            worker->execAndCaptureOutput(getCommand);  // Appeler execAndCaptureOutput avec l'argument
+        });
+
+        // Connecter pour traiter le résultat quand il est prêt
+        QObject::connect(worker, &cmdWorker::resultReady, [&](const QString& result) {
+            infos = result;
+            QJsonDocument doc = QJsonDocument::fromJson(infos.toStdString().c_str());
+            QJsonObject video = doc.object();
+            //qInfo("jj");
+            //qInfo() << video;
+
+            id = video["id"].toString();
+            furl = urlin;
+            title = video["title"].toString();
+            duration = video["duration"].toInt();
+            //qInfo()<<video["duration"].toString();
+
+            QJsonArray thumbnailsArray = video["thumbnails"].toArray();
+            if (thumbnailsArray.size() > 1) {
+                thumb = thumbnailsArray[thumbnailsArray.size() - 2].toObject()["url"].toString();
+            } else {
+                thumb = "";  // Ou une valeur par défaut si nécessaire
+            }
+
+            author = video["uploader"].toString();
+            loop.quit();
+        });
+
+        // Connecter pour fermer et nettoyer le thread
+        QObject::connect(worker, &cmdWorker::resultReady, thread, &QThread::quit);
+        QObject::connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+        QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+
+        // Démarrer le thread
+        thread->start();
+
+        // Attendre que le signal soit émis (sans bloquer l'interface utilisateur)
+        loop.exec();  // L'exécution est suspendue ici jusqu'à ce que `loop.quit()` soit appelé
+        */
+        qInfo("ERROR: no data");
     }
 }
 
@@ -49,33 +123,78 @@ QString yt_music::print() {
 
 QString yt_music::get_url() {
     std::string getCommand = ytDlpPath + " --no-warnings --dump-json " + furl.toStdString();
-    infos = execAndCaptureOutput(getCommand);
-    QJsonDocument doc = QJsonDocument::fromJson(infos.c_str());
-    QJsonObject video = doc.object();
+    cmdWorker* worker = new cmdWorker();
+    QThread* thread = new QThread();
+    QEventLoop loop;
 
-    QJsonArray allstreams = video["formats"].toArray();
-    QJsonArray audiostreams;
+    worker->moveToThread(thread);
 
-    for (const QJsonValue &streamValue : allstreams) {
-        QJsonObject stream = streamValue.toObject();
-        QString acodec = stream["acodec"].toString();
-        QString vcodec = stream["vcodec"].toString();
+    // Variable pour stocker l'URL
+    QString resultUrl;
 
-        if (acodec != "none" && vcodec == "none") {
-            audiostreams.append(stream);
+    // Connecter pour exécuter la commande quand le thread commence
+    QObject::connect(thread, &QThread::started, [=]() {
+        worker->execAndCaptureOutput(getCommand);  // Appeler execAndCaptureOutput avec l'argument
+    });
+
+    // Connecter pour traiter le résultat quand il est prêt
+    QObject::connect(worker, &cmdWorker::resultReady, [&](const QString& result) {
+        infos = result;
+        QJsonDocument doc = QJsonDocument::fromJson(infos.toStdString().c_str());
+        QJsonObject video = doc.object();
+
+        QJsonArray allstreams = video["formats"].toArray();
+        QJsonArray audiostreams;
+
+        for (const QJsonValue& streamValue : allstreams) {
+            QJsonObject stream = streamValue.toObject();
+            QString acodec = stream["acodec"].toString();
+            QString vcodec = stream["vcodec"].toString();
+
+            if (acodec != "none" && vcodec == "none") {
+                audiostreams.append(stream);
+            }
         }
-    }
 
-    QJsonObject firstAudioStream;
-    if (!audiostreams.isEmpty()) {
-        firstAudioStream = audiostreams[0].toObject();
-    }
+        QJsonObject firstAudioStream;
+        if (!audiostreams.isEmpty()) {
+            firstAudioStream = audiostreams[0].toObject();
+        }
 
-    url = firstAudioStream["url"].toString();
-    return url;
+        resultUrl = firstAudioStream["url"].toString();
+        title = video["title"].toString();
+        duration = video["duration"].toInt();
 
+        QJsonArray thumbnailsArray = video["thumbnails"].toArray();
+        if (thumbnailsArray.size() > 1) {
+            thumb = thumbnailsArray[thumbnailsArray.size() - 2].toObject()["url"].toString();
+        } else {
+            thumb = "";  // Ou une valeur par défaut si nécessaire
+        }
+
+        author = video["uploader"].toString();
+
+        // Quitter l'event loop quand l'URL est prête
+        loop.quit();
+    });
+
+    // Connecter pour fermer et nettoyer le thread
+    QObject::connect(worker, &cmdWorker::resultReady, thread, &QThread::quit);
+    QObject::connect(thread, &QThread::finished, worker, &QObject::deleteLater);
+    QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+
+    // Démarrer le thread
+    thread->start();
+
+    // Attendre que le signal soit émis (sans bloquer l'interface utilisateur)
+    loop.exec();  // L'exécution est suspendue ici jusqu'à ce que `loop.quit()` soit appelé
+
+    // Retourner l'URL obtenue
+    return resultUrl;
 }
 
+
+/*
 std::wstring yt_music::stringToWstring(const std::string& str) {
     int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
     std::wstring wstrTo(size_needed, 0);
@@ -138,6 +257,7 @@ std::string yt_music::execAndCaptureOutput(const std::string& cmd) {
 
     return output;
 }
+*/
 
 QJsonObject yt_music::save() {
     QJsonObject jsonObject;
@@ -150,4 +270,5 @@ QJsonObject yt_music::save() {
 
     return jsonObject;
 }
+
 

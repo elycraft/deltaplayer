@@ -24,6 +24,7 @@ private:
 
 
     void parseHtml(const QString& response);
+    int timeStringToSeconds(const QString& timeStr);
 
 private slots:
     void onSearchFinished(QNetworkReply* reply);

@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QMetaType>
+#include "cmdworker.h"
 
 
 class yt_music
@@ -32,7 +33,7 @@ private:
     std::wstring stringToWstring(const std::string& str);
     std::string execAndCaptureOutput(const std::string& cmd);
     std::string ytDlpPath;
-    std::string infos;
+    QString infos;
 };
 
 #endif // YT_MUSIC_H

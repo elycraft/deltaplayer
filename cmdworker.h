@@ -8,7 +8,9 @@ Q_OBJECT
 public:
     cmdWorker();
     std::wstring stringToWstring(const std::string& str);
-    std::string execAndCaptureOutput(const std::string& cmd);
+    void execAndCaptureOutput(const std::string& cmd);
+signals:
+    void resultReady(const QString& result);
 };
 
 #endif // CMDWORKER_H

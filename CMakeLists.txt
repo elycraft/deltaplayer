@@ -44,6 +44,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         youtubesearch.h youtubesearch.cpp
         settingmanager.h settingmanager.cpp
         cmdworker.h cmdworker.cpp
+        yt_playlist.h yt_playlist.cpp
 
 
     )
