@@ -307,8 +307,44 @@ void playlist_item::handlerNM() {
         );
 
     if (ok) {
-        yt_playlist a = *new yt_playlist(ytPath);
-        a.get_info("https://www.youtube.com/playlist?list=PLDOjCqYj3ys3TEe8HCR7_cYH7X7dU28_B");
+        yt_playlist *a =  new yt_playlist(name,ytPath);
+        QJsonArray videos = a->get_info();
+        for (QJsonValue video : videos) {
+            std::map<QString, QString> dataoo;
+            dataoo["title"] = video["title"].toString();
+            dataoo["author"] = video["author"].toString();
+            dataoo["furl"] = video["furl"].toString();
+            dataoo["id"] = video["id"].toString();
+            dataoo["length"] = video["duration"].toString();
+            dataoo["thumb"] = video["thumb"].toString();
+            yt_music *music = new yt_music(ytPath,"",dataoo);
+            musicsI.append(music);
+            QString texteametre;
+            int maxcara = 60;
+            QString a = QString("    %1 - By %2").arg(music->title).arg(music->author);
+            if (a.length() > maxcara) {
+                int tm = maxcara - (a.length() - music->title.length());
+                QString shortText = music->title.left(tm) + "...";
+                texteametre = QString("    %1 - By %2").arg(shortText).arg(music->author);
+            } else {
+                texteametre = QString("    %1 - By %2").arg(music->title).arg(music->author);
+            }
+            //qRegisterMetaType<yt_music>("yt_music");
+            // Encapsulation des données dans un QVariant contenant une QList<QVariant>
+            QVariant data = QVariant::fromValue(QList<QVariant>{
+                QVariant::fromValue(QString(":/16x16/icons/16x16/cil-media-play.png")),
+                QVariant::fromValue(QString(":/20x20/icons/20x20/cil-x-circle.png")),
+                QVariant::fromValue(QString("")),
+                QVariant::fromValue(texteametre),
+                QVariant::fromValue(il->get(music->thumb)),
+                QVariant::fromValue(QString("")),
+                QVariant::fromValue(music)
+            });
+
+            QListWidgetItem* item = new QListWidgetItem();
+            item->setData(Qt::UserRole, data);
+            parent->playlistEditList->addItem(item);
+        }
     }
 }
 

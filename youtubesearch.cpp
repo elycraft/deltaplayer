@@ -82,7 +82,7 @@ void YoutubeSearch::parseHtml(const QString& response) {
             res["title"] = video["title"].toObject().value("runs").toArray().first().toObject().value("text").toString();
             res["long_desc"] = video["descriptionSnippet"].toObject().value("runs").toArray().first().toObject().value("text").toString();
             res["author"] = video["longBylineText"].toObject().value("runs").toArray().first().toObject().value("text").toString();
-            res["length"] = timeStringToSeconds(video["lengthText"].toObject().value("simpleText").toString());
+            res["length"] = video["lengthSeconds"].toInt();
             res["views"] = video["viewCountText"].toObject().value("simpleText").toString();
             res["publish_time"] = video["publishedTimeText"].toObject().value("simpleText").toString();
             res["url_suffix"] = video["navigationEndpoint"].toObject().value("commandMetadata").toObject().value("webCommandMetadata").toObject().value("url").toString();
