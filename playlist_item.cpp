@@ -2,6 +2,8 @@
 #include "playlist_manager.h"
 #include "GUI_BASE.h"
 #include "./ui_GUI_BASE.h"
+#include <algorithm> // pour std::shuffle
+#include <QRandomGenerator>
 
 bool askUserConfirmation() {
     QMessageBox msgBox;
@@ -172,7 +174,8 @@ void playlist_item::autoplay() {
 void playlist_item::shuffle() {
     QList<yt_music*> copmusics = musicsI;
     qInfo() << copmusics;
-    std::random_shuffle(copmusics.begin(), copmusics.begin());
+    auto rng = QRandomGenerator::global(); // Utilise le générateur de Qt pour un mélange plus stable
+    std::shuffle(copmusics.begin(), copmusics.end(), *rng);
     qInfo() << copmusics;
     mp->add_and_play(copmusics);
 }

@@ -45,9 +45,19 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         settingmanager.h settingmanager.cpp
         cmdworker.h cmdworker.cpp
         yt_playlist.h yt_playlist.cpp
+        app_icon.rc
+        icons/app.ico
+
+
 
 
     )
+
+    set_target_properties(Deltaplayer2 PROPERTIES OUTPUT_NAME "Deltaplayer")
+    if(WIN32)
+        target_sources(Deltaplayer2 PRIVATE app_icon.rc)
+    endif()
+
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Deltaplayer2 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)

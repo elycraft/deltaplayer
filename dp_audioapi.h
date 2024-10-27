@@ -20,9 +20,12 @@ public:
     void pause();
     QMediaPlayer* player;
     std::list <yt_music*> queue;
+    std::list <yt_music*> backQueue;
     void add_to_queue(yt_music* mus);
     void add_and_play_s(yt_music* mus);
     void add_and_play(QList<yt_music*> mus);
+    bool needBackQueue;
+    void goBack();
 
 
 public slots:

@@ -65,8 +65,7 @@ void playbar_manager::btnPause() {
 }
 
 void playbar_manager::btnRewind() {
-    yt_music *vid = new yt_music("https://www.youtube.com/watch?v=ixRLjjTRczE");
-    mp->add_and_play_s(vid);
+    mp->goBack();
 }
 
 void playbar_manager::btnSkip() {

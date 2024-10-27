@@ -6,6 +6,7 @@
 dp_audioapi::dp_audioapi() {
     isPlaying = false;
     paused = true;
+    needBackQueue = true;
     current = nullptr;
     player = new QMediaPlayer;
     audio = new QAudioOutput;
@@ -65,8 +66,23 @@ void dp_audioapi::play_queue() {
         }
     }
     play(queue.front());
+    if (needBackQueue) {
+        qInfo("Adding to backQueue");
+        backQueue.push_front(queue.front());
+    } else {
+        needBackQueue = true;
+    }
     queue.pop_front();
     emit hasToUpdate();
+}
+
+void dp_audioapi::goBack() {
+    if (current->id == backQueue.front()->id){
+        backQueue.pop_front();
+    }
+    needBackQueue = false;
+    add_and_play_s(backQueue.front());
+    backQueue.pop_front();
 }
 
 void dp_audioapi::add_to_queue(yt_music* mus) {

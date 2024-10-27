@@ -126,8 +126,19 @@ void DraggableItem::setDText(const QString &text1) {
 }
 
 void DraggableItem::setThumb(const QString &imagePath) {
+    /*
+    QPixmap pixmap(imagePath);
+    QSize labelSize = thumb->size();
+
+    // Recadre le QPixmap en gardant le ratio et en remplissant complètement le QLabel
+    QPixmap croppedPixmap = pixmap.scaled(labelSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+
+    // Dessine le pixmap recadré dans le QLabel sans ajuster sa taille
+    thumb->setPixmap(croppedPixmap);
+    thumb->setAlignment(Qt::AlignCenter);
+    */
     thumb->setStyleSheet(QString("border-radius: 2px;"
-                                   "border-image: url('%1') 0 0 0 0 stretch stretch").arg(imagePath));
+                                 "border-image: url('%1') 0 0 0 0 stretch stretch").arg(imagePath));
 }
 
 void DraggableItem::setId(QString id) {
