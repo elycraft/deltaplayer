@@ -3,6 +3,7 @@
 #include "filemanager.h"
 #include "imageloader.h"
 #include "playlist_manager.h"
+#include "accountmanager.h"
 #include "exitprogram.h"
 
 #include <QApplication>
@@ -16,6 +17,8 @@ int main(int argc, char *argv[])
 
     playbar_manager *playbarM = new playbar_manager(&w, sm);
     playlist_manager *playlistM = new playlist_manager(&w, playbarM->mp,sm);
+
+    accountManager *accountM = new accountManager(&w);
 
     ExitProgram *exitP = new ExitProgram();
     exitP->addExitFunction([&playlistM](){playlistM->save();});

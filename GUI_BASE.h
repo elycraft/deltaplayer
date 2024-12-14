@@ -27,6 +27,8 @@ public:
     bool canMove;
     int winState;
     QString style_bt_standard;
+    void userIcon(QString initialsTooltip,QString icon, bool showHide);
+
 
 
 public slots:
@@ -48,7 +50,6 @@ private:
     QString deselectMenu(QString getStyle);
     void labelTitle(QString text);
     void labelDescription(QString text);
-    void userIcon(QString initialsTooltip,QString icon, bool showHide);
     QPoint cur_pos;
     QPoint new_pos;
 

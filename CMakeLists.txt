@@ -47,6 +47,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         yt_playlist.h yt_playlist.cpp
         app_icon.rc
         icons/app.ico
+        apimanager.h apimanager.cpp
+        accountmanager.h accountmanager.cpp
 
 
 

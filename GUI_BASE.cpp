@@ -64,7 +64,7 @@ void MainWindowt::userIcon(QString initialsTooltip,QString icon, bool showHide) 
 
         if (icon != "") {
             QString style = ui->label_user_icon->styleSheet();
-            QString setIcon = "QLabel { background-image: " + icon + "; }";
+            QString setIcon = "QPushButton { border-image: " + icon + " ; }";
             ui->label_user_icon->setStyleSheet(style + setIcon);
             ui->label_user_icon->setText("");
             ui->label_user_icon->setToolTip(initialsTooltip);
