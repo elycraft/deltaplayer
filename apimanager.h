@@ -5,6 +5,15 @@
 #include <qnetworkreply.h>
 #include <qnetworkaccessmanager.h>
 #include <qobject.h>
+#include <QCoreApplication>
+#include <QHttpMultiPart>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+
 
 class apiManager : public QObject
 {
@@ -15,12 +24,15 @@ public:
     void sendPostRequest(const QString& url, const QJsonObject& json);
     void login(QString username, QString password);
     QString getRessource(QString collection, QString recordId, QString filename);
+    void uploadFile(const QString& filePath, const QString &collection, const QString& collectionName, const QString& fieldName ,const QString& authToken);
 
     QJsonObject user;
     QString name;
     QString avatar;
     QString id;
+    QString fileLink;
     bool isLogIn;
+    QString token;
 
 signals:
     // Signal pour transmettre le résultat JSON
@@ -36,7 +48,7 @@ private slots:
 private:
     QNetworkAccessManager networkManager;
     QString apiurl;
-    QString token;
+
 
 };
 

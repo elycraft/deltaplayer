@@ -6,11 +6,13 @@
 accountManager::accountManager( MainWindowt* windowin) {
 
     window = windowin;
+    fm = new FileManager();
     il = new ImageLoader();
 
     api = new apiManager();
     connect(window->ui->loginToAcc, &QPushButton::clicked, this, &accountManager::handleLogin);
     connect(window->ui->label_user_icon, &QPushButton::clicked, this, &accountManager::goPage);
+    connect(window->ui->acoounttestBut, &QPushButton::clicked, this, &accountManager::pushPlaylists);
 
 }
 
@@ -22,6 +24,10 @@ void accountManager::goPage() {
         window->ui->stackedWidget->setCurrentWidget(window->ui->page_noaccount);
 
     }
+}
+
+void accountManager::pushPlaylists() {
+    api->uploadFile(QDir(fm->userDataDir).filePath("playlists.json"),"files",api->fileLink,"playlists",api->token);
 }
 
 
@@ -36,6 +42,7 @@ void accountManager::handleLogin() {
                                      .arg(avatar);
             window->ui->imageAvatar->setStyleSheet(styleSheet);
             window->ui->accountName->setText(api->name);
+            goPage();
 
         }
 

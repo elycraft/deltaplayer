@@ -1568,7 +1568,7 @@ QPushButton:pressed {
                    <string notr="true">background: transparent;</string>
                   </property>
                   <property name="currentIndex">
-                   <number>6</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="page_playlists">
                    <layout class="QVBoxLayout" name="verticalLayout_10"/>
@@ -2572,6 +2572,9 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QLineEdit" name="loginEmail">
+                         <property name="text">
+                          <string>test@test.com</string>
+                         </property>
                          <property name="placeholderText">
                           <string>Email</string>
                          </property>
@@ -2580,7 +2583,7 @@ border-radius: 15px;</string>
                        <item>
                         <widget class="QLineEdit" name="loginPass">
                          <property name="text">
-                          <string/>
+                          <string>12345678</string>
                          </property>
                          <property name="echoMode">
                           <enum>QLineEdit::EchoMode::Password</enum>
@@ -2784,7 +2787,7 @@ border-radius: 15px;</string>
                      </layout>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="pushButton_2">
+                     <widget class="QPushButton" name="acoounttestBut">
                       <property name="text">
                        <string>PushButton</string>
                       </property>
@@ -3116,7 +3119,7 @@ QScrollBar:horizontal {
                              <rect>
                               <x>0</x>
                               <y>0</y>
-                              <width>655</width>
+                              <width>218</width>
                               <height>218</height>
                              </rect>
                             </property>
