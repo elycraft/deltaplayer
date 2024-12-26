@@ -195,7 +195,7 @@ void MainWindowt::ButtonMenu() {
 
 
     }
-    qInfo("Go to "+btnWidget->objectName().toLatin1());
+    //qInfo("Go to "+btnWidget->objectName().toLatin1());
 }
 
 

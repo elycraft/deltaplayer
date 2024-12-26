@@ -2,7 +2,6 @@
 #include <map>
 #include <qeventloop.h>
 #include <qthread.h>
-#include <windows.h>
 #include <iostream>
 #include <string>
 
