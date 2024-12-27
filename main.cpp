@@ -5,6 +5,7 @@
 #include "playlist_manager.h"
 #include "accountmanager.h"
 #include "exitprogram.h"
+#include "cmdworker.h"
 
 #include <QApplication>
 
@@ -23,6 +24,9 @@ int main(int argc, char *argv[])
     ExitProgram *exitP = new ExitProgram();
     exitP->addExitFunction([&playlistM](){playlistM->save();});
     exitP->addExitFunction([&sm](){sm->appExit();});
+
+    cmdWorker* test = new cmdWorker();
+    test->execAndCaptureOutput("https://www.youtube.com/watch?v=yYKXvpjppsE");
 
     QObject::connect(&a, &QApplication::aboutToQuit, [&exitP]() {
         exitP->appExit();  // Appel de toutes les fonctions avant de quitter

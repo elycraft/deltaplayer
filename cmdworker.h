@@ -1,6 +1,10 @@
 #ifndef CMDWORKER_H
 #define CMDWORKER_H
 #include <QObject>
+#include <QString>
+#include <QJniObject >
+#include <QJniEnvironment>
+#include <QDebug>
 
 class cmdWorker : public QObject
 {

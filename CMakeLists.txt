@@ -79,9 +79,12 @@ else()
     endif()
 endif()
 
+
+
 target_link_libraries(Deltaplayer2 PRIVATE
     Qt6::Widgets
     Qt6::Multimedia
+
 
 )
 
@@ -120,6 +123,12 @@ set_target_properties(Deltaplayer2 PROPERTIES
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
+
+set(AAR_PATH ${CMAKE_SOURCE_DIR}/android/libs/youtubedl-android.aar)
+
+# Ajouter l'AAR comme dépendance
+set(CMAKE_ANDROID_JAR ${AAR_PATH})
+
 
 include(GNUInstallDirs)
 install(TARGETS Deltaplayer2

@@ -6,6 +6,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.4.1'
+
     }
 }
 
@@ -19,6 +20,9 @@ apply plugin: 'com.android.application'
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation 'androidx.core:core:1.13.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
+    implementation files('libs/youtubedl-android.aar')
+
 }
 
 android {
