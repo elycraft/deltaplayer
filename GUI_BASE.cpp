@@ -13,21 +13,37 @@ MainWindowt::MainWindowt(QWidget *parent)
     style_bt_standard = "QPushButton { background-image: ICON_REPLACE; background-position: left center; background-repeat: no-repeat; border: none; border-left: 28px solid rgb(27, 29, 35); background-color: rgb(27, 29, 35); text-align: left; padding-left: 45px; } QPushButton[Active=true] { background-image: ICON_REPLACE; background-position: left center; background-repeat: no-repeat; border: none; border-left: 28px solid rgb(27, 29, 35); border-right: 5px solid rgb(44, 49, 60); background-color: rgb(27, 29, 35); text-align: left; padding-left: 45px; } QPushButton:hover { background-color: rgb(33, 37, 43); border-left: 28px solid rgb(33, 37, 43); } QPushButton:pressed { background-color: rgb(85, 170, 255); border-left: 28px solid rgb(85, 170, 255); }";
 
     ui->setupUi(this);
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-    setAttribute(Qt::WA_TranslucentBackground);
-    setWindowIcon(QIcon(":/16x16/icons/logo_new.png"));
+    //setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    //setAttribute(Qt::WA_TranslucentBackground);
+    //setWindowIcon(QIcon(":/16x16/icons/logo_new.png"));
     setWindowTitle("Deltaplayer");
     labelTitle("Deltaplayer");
     labelDescription("");
     QSize startSize = QSize(1500, 900);
-    resize(startSize);
-    setMinimumSize(startSize);
+    //resize(startSize);
+    //setMinimumSize(startSize);
+
+    // ANDROID
+    ui->frame_top_right->hide();
+    ui->frame_top_right->layout()->removeWidget( ui->btn_toggle_menu );
+    //delete ui->frame_top_right->layout();
+
+    QBoxLayout* boxLayouttemp = qobject_cast<QBoxLayout*>(ui->frame_content_right->layout());
+    boxLayouttemp->insertWidget (0, ui->btn_toggle_menu );
+    ui->frame_top->hide();
+
+    ui->horizontalSpacer->sizeHint().setWidth(0);
+    ui->horizontalSpacer_2->sizeHint().setWidth(0);
+
+    ui->MusicPoster->setFixedWidth(75);
+    ui->MusicPoster->setFixedHeight(75);
 
 
+    //ui->MusicPoster->hide();
+    ui->soundLabel->hide();
+    ui->soundSlider->hide();
 
-    connect(ui->btn_close,SIGNAL(clicked()),this,SLOT(close()));
-    connect(ui->btn_minimize,SIGNAL(clicked()),this,SLOT(showMinimized()));
-    connect(ui->btn_maximize_restore,SIGNAL(clicked()),this,SLOT(maximize_restore()));
+    ///
     connect(ui->btn_toggle_menu,SIGNAL(clicked()),this,SLOT(toggleMenu()));
 
     ui->stackedWidget->setMinimumWidth(20);
@@ -36,8 +52,8 @@ MainWindowt::MainWindowt(QWidget *parent)
     addNewMenu("Settings","btn_settings","url(:/16x16/icons/16x16/cil-settings.png)",true);
     selectStandardMenu("btn_playlists");
     ui->stackedWidget->setCurrentWidget(ui->page_playlists);
-    userIcon(getenv("username"), "", true);
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    userIcon("Android", "", true);
+    //ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
 }
 
@@ -77,17 +93,17 @@ void MainWindowt::userIcon(QString initialsTooltip,QString icon, bool showHide) 
 
 void MainWindowt::toggleMenu(){
 
-    int maxWidth = 220;
+    int maxWidth = 70;
     bool enable = true;
     if (enable == true){
         // GET WIDTH
         int width = ui->frame_left_menu->width();
         int maxExtend = maxWidth;
-        int standard = 70;
+        int standard = 1;
 
         //SET MAX WIDTH
         int widthExtended;
-        if (width == 70){
+        if (width == standard){
             widthExtended = maxExtend;
         }
         else{
@@ -221,7 +237,7 @@ void MainWindowt::maximize_restore() {
         winState = 0;
     }
 }
-
+/*
 void MainWindowt::mouseDoubleClickEvent(QMouseEvent *event){
     QWidget* widget = childAt(event->pos());;
     QString name;
@@ -232,6 +248,7 @@ void MainWindowt::mouseDoubleClickEvent(QMouseEvent *event){
 }
 
 // Mouve
+
 
 void MainWindowt::mousePressEvent(QMouseEvent *event) {
     QWidget* widget = childAt(event->pos());;
@@ -258,5 +275,4 @@ void MainWindowt::mouseMoveEvent(QMouseEvent *event) {
     }
 }
 
-
-
+*/

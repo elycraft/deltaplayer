@@ -38,10 +38,6 @@ public slots:
 
 private:
 
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseDoubleClickEvent(QMouseEvent *event);
     void addNewMenu(QString name, QString objName, QString icon, bool isTopMenu);
     void selectStandardMenu(QString widget);
     void resetStyle(QString widget);

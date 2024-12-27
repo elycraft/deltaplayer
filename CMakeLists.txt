@@ -49,6 +49,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         icons/app.ico
         apimanager.h apimanager.cpp
         accountmanager.h accountmanager.cpp
+        android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
 
 
 
@@ -84,6 +85,28 @@ target_link_libraries(Deltaplayer2 PRIVATE
 
 )
 
+if (ANDROID)
+    include(FetchContent)
+    FetchContent_Declare(
+        android_openssl
+        DOWNLOAD_EXTRACT_TIMESTAMP true
+        URL https://github.com/KDAB/android_openssl/archive/refs/heads/master.zip
+    )
+    FetchContent_MakeAvailable(android_openssl)
+    include(${android_openssl_SOURCE_DIR}/android_openssl.cmake)
+endif()
+
+if (ANDROID)
+    add_android_openssl_libraries(Deltaplayer2 )
+endif()
+
+if (ANDROID)
+    set_target_properties(Deltaplayer2 PROPERTIES
+        QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+    )
+    qt6_android_generate_deployment_settings(Deltaplayer2)
+    qt_android_add_apk_target(Deltaplayer2)
+endif ()
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.

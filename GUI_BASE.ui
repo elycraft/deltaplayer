@@ -916,6 +916,9 @@ QPushButton:pressed {
           </item>
           <item>
            <widget class="QFrame" name="frame_top_right">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="styleSheet">
              <string notr="true">background: transparent;</string>
             </property>
@@ -3770,7 +3773,7 @@ QHeaderView::section:vertical
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
-                       <width>150</width>
+                       <width>0</width>
                        <height>10</height>
                       </size>
                      </property>
@@ -3778,6 +3781,12 @@ QHeaderView::section:vertical
                    </item>
                    <item>
                     <widget class="QLabel" name="MusicPoster">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="minimumSize">
                       <size>
                        <width>150</width>
@@ -3815,6 +3824,12 @@ QHeaderView::section:vertical
                    </item>
                    <item>
                     <widget class="QFrame" name="BarAndPause_2">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="styleSheet">
                       <string notr="true">background-color: rgb(39, 44, 54);
  border-radius: 15px;</string>
@@ -4002,7 +4017,7 @@ color: rgb(170, 255, 0);
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLabel" name="label_2">
+                    <widget class="QLabel" name="soundLabel">
                      <property name="text">
                       <string/>
                      </property>
@@ -4043,7 +4058,7 @@ color: rgb(170, 255, 0);
                      </property>
                      <property name="sizeHint" stdset="0">
                       <size>
-                       <width>150</width>
+                       <width>0</width>
                        <height>10</height>
                       </size>
                      </property>
