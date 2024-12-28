@@ -5,7 +5,7 @@
 #include "playlist_manager.h"
 #include "accountmanager.h"
 #include "exitprogram.h"
-#include "cmdworker.h"
+#include "androidytdlpmanager.h"
 
 #include <QApplication>
 
@@ -25,8 +25,9 @@ int main(int argc, char *argv[])
     exitP->addExitFunction([&playlistM](){playlistM->save();});
     exitP->addExitFunction([&sm](){sm->appExit();});
 
-    cmdWorker* test = new cmdWorker();
-    test->execAndCaptureOutput("https://www.youtube.com/watch?v=yYKXvpjppsE");
+    androidYtdlpManager* test = new androidYtdlpManager();
+    test->init();
+    test->get_info("https://www.youtube.com/watch?v=yYKXvpjppsE");
 
     QObject::connect(&a, &QApplication::aboutToQuit, [&exitP]() {
         exitP->appExit();  // Appel de toutes les fonctions avant de quitter

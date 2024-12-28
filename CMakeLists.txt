@@ -50,6 +50,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         apimanager.h apimanager.cpp
         accountmanager.h accountmanager.cpp
         android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
+        androidytdlpmanager.h androidytdlpmanager.cpp
 
 
 
@@ -125,9 +126,10 @@ set_target_properties(Deltaplayer2 PROPERTIES
 )
 
 set(AAR_PATH ${CMAKE_SOURCE_DIR}/android/libs/youtubedl-android.aar)
+set(AAR_PATH2 ${CMAKE_SOURCE_DIR}/android/libs/common-release.aar)
 
 # Ajouter l'AAR comme dépendance
-set(CMAKE_ANDROID_JAR ${AAR_PATH})
+set(CMAKE_ANDROID_JAR ${AAR_PATH} ${AAR_PATH2})
 
 
 include(GNUInstallDirs)
