@@ -19,7 +19,7 @@ public:
     androidYtdlpManager();
     void init();
     QJniObject ytDlpInstance;
-    void get_info(QString url);
+    QString get_info(QString url);
 
 };
 

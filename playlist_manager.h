@@ -11,6 +11,7 @@
 #include "customlistwidget.h"
 #include "DraggableItem.h"
 #include "settingmanager.h"
+#include <QScroller>
 
 class pos {
 public:

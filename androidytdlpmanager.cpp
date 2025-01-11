@@ -20,7 +20,7 @@ bool showInfo(QString msg) {
 }
 
 androidYtdlpManager::androidYtdlpManager() {
-
+    init();
 }
 
 void androidYtdlpManager::init() {
@@ -51,7 +51,7 @@ void androidYtdlpManager::init() {
 
 }
 
-void androidYtdlpManager::get_info(QString url) {
+QString androidYtdlpManager::get_info(QString url) {
 
     // Préparer l'URL en tant que String Java
     QJniObject jniUrl = QJniObject::fromString(url);
@@ -79,7 +79,7 @@ void androidYtdlpManager::get_info(QString url) {
 
     if (!ytDlpInstance.isValid()) {
         qDebug() << "Impossible de récupérer l'instance de YoutubeDL";
-        return;
+        return "";
     }
 
     QJniObject responseObject = ytDlpInstance.callObjectMethod(
@@ -93,17 +93,18 @@ void androidYtdlpManager::get_info(QString url) {
     if (!responseObject.isValid()) {
         qDebug() << "Erreur : l'appel à execute a échoué. Impossible d'accéder aux champs.";
         // Gérer l'erreur (par exemple, retourner ou lancer une exception)
-        return;
+        return "";
     }
 
     QJniObject outField = responseObject.getObjectField("out","Ljava/lang/String;");
 
     if (!outField.isValid()) {
         qDebug() << "Erreur : impossible d'accéder au champ 'out'";
-        return;
+        return "";
     }
     QString finalResponse = outField.toString();
-    showInfo(finalResponse);
+
+    return finalResponse;
 
 }
 

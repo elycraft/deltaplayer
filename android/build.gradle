@@ -48,6 +48,7 @@ android {
     // Extract native libraries from the APK
     packagingOptions.jniLibs.useLegacyPackaging true
 
+
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -58,6 +59,7 @@ android {
             renderscript.srcDirs = ['src']
             assets.srcDirs = ['assets']
             jniLibs.srcDirs = ['libs']
+
        }
     }
 
@@ -80,6 +82,7 @@ android {
     }
 
     defaultConfig {
+
         resConfig "en"
         minSdkVersion qtMinSdkVersion
         targetSdkVersion qtTargetSdkVersion

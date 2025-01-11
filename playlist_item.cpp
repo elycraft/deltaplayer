@@ -70,33 +70,38 @@ playlist_item::playlist_item(QString namein,QJsonArray musicsin,QString thumbin,
 
 void playlist_item::create() {
     PlaylistTemplate = new QFrame(gridFrame);
-    PlaylistTemplate->setMaximumSize(QSize(150, 150));
-    PlaylistTemplate->setMinimumSize(QSize(150, 150));
+    PlaylistTemplate->setMaximumSize(QSize(15000, 160));
+    PlaylistTemplate->setMinimumSize(QSize(200, 160));
+    QSizePolicy sizePolicye(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    //sizePolicye.setHeightForWidth(thumb->sizePolicy().hasHeightForWidth());
+    PlaylistTemplate->setSizePolicy(sizePolicye);
 
     QString style = QString(
                         "#PlaylistTemplate {"
                         "  background-color: rgb(39, 44, 54);"
                         "  border-radius: 15px;"
-                        "  border-image: url('%1') 0 0 0 0 stretch stretch;"
-                        "  background-repeat: no-repeat;"
                         "  border: none;"
                         "}"
-                        ).arg(thumbUrl);
+                        );
 
     PlaylistTemplate->setStyleSheet(style);
     PlaylistTemplate->setObjectName("PlaylistTemplate");
 
-    verticalLayout_13 = new QVBoxLayout(PlaylistTemplate);
+    verticalLayout_13 = new QHBoxLayout(PlaylistTemplate);
     verticalLayout_13->setObjectName("verticalLayout_13");
 
     thumb = new QPushButton(PlaylistTemplate);
     QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     sizePolicy.setHeightForWidth(thumb->sizePolicy().hasHeightForWidth());
     thumb->setSizePolicy(sizePolicy);
-    thumb->setStyleSheet("QPushButton {"
-                               "    border: none;"
-                               "    background-color: rgba(27, 29, 35,0);"
-                               "}");
+    thumb->setMaximumSize(QSize(150, 150));
+    thumb->setMinimumSize(QSize(150, 150));
+    thumb->setStyleSheet(QString("QPushButton {"
+                         "    border-radius: 15px;"
+                         "    border-image: url('%1') 0 0 0 0 stretch stretch;"
+                         "    background-repeat: no-repeat;"
+                         "    background-color: rgba(27, 29, 35);"
+                         "}").arg(thumbUrl));
     thumb->setText("");
     thumb->setObjectName("thumb");
     verticalLayout_13->addWidget(thumb);

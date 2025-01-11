@@ -5,6 +5,7 @@
 #include <QJniObject >
 #include <QJniEnvironment>
 #include <QDebug>
+#include "androidytdlpmanager.h"
 
 class cmdWorker : public QObject
 {

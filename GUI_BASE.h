@@ -28,6 +28,7 @@ public:
     int winState;
     QString style_bt_standard;
     void userIcon(QString initialsTooltip,QString icon, bool showHide);
+    bool menuOpen = false;
 
 
 

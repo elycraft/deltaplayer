@@ -67,7 +67,7 @@ private:
     void clearSerachList();
 
     QFrame *PlaylistTemplate;
-    QVBoxLayout *verticalLayout_13;
+    QHBoxLayout *verticalLayout_13;
     QPushButton *thumb;
     QFrame *options;
     QHBoxLayout *optionLayout;

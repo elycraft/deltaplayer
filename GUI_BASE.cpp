@@ -13,7 +13,7 @@ MainWindowt::MainWindowt(QWidget *parent)
     style_bt_standard = "QPushButton { background-image: ICON_REPLACE; background-position: left center; background-repeat: no-repeat; border: none; border-left: 28px solid rgb(27, 29, 35); background-color: rgb(27, 29, 35); text-align: left; padding-left: 45px; } QPushButton[Active=true] { background-image: ICON_REPLACE; background-position: left center; background-repeat: no-repeat; border: none; border-left: 28px solid rgb(27, 29, 35); border-right: 5px solid rgb(44, 49, 60); background-color: rgb(27, 29, 35); text-align: left; padding-left: 45px; } QPushButton:hover { background-color: rgb(33, 37, 43); border-left: 28px solid rgb(33, 37, 43); } QPushButton:pressed { background-color: rgb(85, 170, 255); border-left: 28px solid rgb(85, 170, 255); }";
 
     ui->setupUi(this);
-    //setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    //setWindowFlags(Qt::Window | Qt::MaximizeUsingFullscreenGeometryHint);
     //setAttribute(Qt::WA_TranslucentBackground);
     //setWindowIcon(QIcon(":/16x16/icons/logo_new.png"));
     setWindowTitle("Deltaplayer");
@@ -43,7 +43,20 @@ MainWindowt::MainWindowt(QWidget *parent)
     ui->soundLabel->hide();
     ui->soundSlider->hide();
 
-    ///
+
+    int width = ui->frame_left_menu->width();
+    QPropertyAnimation *animation = new QPropertyAnimation(ui->frame_left_menu, "minimumWidth");
+    animation->setDuration(1);
+    animation->setStartValue(width);
+    animation->setEndValue(1);
+    animation->setEasingCurve(QEasingCurve::InOutQuart);
+    animation->start();
+    ui->frame_left_menu->hide();
+    ui->frame_grip->hide();
+
+
+    ////////////
+
     connect(ui->btn_toggle_menu,SIGNAL(clicked()),this,SLOT(toggleMenu()));
 
     ui->stackedWidget->setMinimumWidth(20);
@@ -103,20 +116,35 @@ void MainWindowt::toggleMenu(){
 
         //SET MAX WIDTH
         int widthExtended;
-        if (width == standard){
+        if (menuOpen == false){
+            ui->frame_left_menu->show();
+            ui->frame_grip->show();
             widthExtended = maxExtend;
+            QPropertyAnimation *animation = new QPropertyAnimation(ui->frame_left_menu, "minimumWidth");
+            animation->setDuration(300);
+            animation->setStartValue(width);
+            animation->setEndValue(widthExtended);
+            animation->setEasingCurve(QEasingCurve::InOutQuart);
+            animation->start();
+            menuOpen = true;
         }
         else{
             widthExtended = standard;
+            QPropertyAnimation *animation = new QPropertyAnimation(ui->frame_left_menu, "minimumWidth");
+            animation->setDuration(300);
+            animation->setStartValue(width);
+            animation->setEndValue(widthExtended);
+            animation->setEasingCurve(QEasingCurve::InOutQuart);
+            animation->start();
+            connect(animation,&QPropertyAnimation::finished, this,  [this]() {
+                ui->frame_left_menu->hide();
+                ui->frame_grip->hide();
+            });
+            menuOpen = false;
         }
 
         //ANIMATION
-        QPropertyAnimation *animation = new QPropertyAnimation(ui->frame_left_menu, "minimumWidth");
-        animation->setDuration(300);
-        animation->setStartValue(width);
-        animation->setEndValue(widthExtended);
-        animation->setEasingCurve(QEasingCurve::InOutQuart);
-        animation->start();
+
 
     }
 
@@ -183,6 +211,7 @@ void MainWindowt::labelPage(QString text) {
 }
 
 void MainWindowt::ButtonMenu() {
+
     QWidget* btnWidget = qobject_cast<QWidget*>(sender());
 
     // PAGE Playlists

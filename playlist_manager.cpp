@@ -42,13 +42,48 @@ playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin, S
     scrollArea = new QScrollArea(ui->page_playlists);
     scrollArea->setWidgetResizable(true);
     scrollArea->setStyleSheet("border-radius: 0px;");
+    scrollArea->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
 
     scrollAreaWidgetContents = new QWidget();
+    scrollAreaWidgetContents->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    scrollAreaWidgetContents->setAttribute(Qt::WA_AcceptTouchEvents);
+    //scrollAreaWidgetContents->setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents, false);
+    //scrollAreaWidgetContents->setStyleSheet("background-color: red; border: 2px solid black;");
+
+
     gridLayoutPlay = new QGridLayout(scrollAreaWidgetContents);
+    gridLayoutPlay->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
     scrollArea->setWidget(scrollAreaWidgetContents);
 
+    QScroller *scroller = QScroller::scroller(scrollAreaWidgetContents); // Utilisation de la méthode statique scroller()
+    if (scroller) {
+        //scroller->grabGesture(scrollAreaWidgetContents);
+        scroller->grabGesture(scrollArea->viewport(), QScroller::LeftMouseButtonGesture);
+        // Configuration optionnelle du QScroller
+        QScrollerProperties properties = scroller->scrollerProperties();
+        properties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, QScrollerProperties::OvershootAlwaysOff);
+        properties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QScrollerProperties::OvershootAlwaysOff);
+        properties.setScrollMetric(QScrollerProperties::DecelerationFactor, 0.1); // Ajuster la décélération
+        scroller->setScrollerProperties(properties);
+        qDebug() << "QScroller activé";
+        qDebug() << "scrollAreaWidgetContents size:" << scrollAreaWidgetContents->size();
+        qDebug() << "scrollArea viewport size:" << scrollArea->viewport()->size();
+    } else {
+        qDebug() << "QScroller non supporté sur cette plateforme";
+        // Gestion alternative si QScroller n'est pas supporté
+    }
+
+    //Important pour le fonctionnement du QScroller
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     ui->verticalLayout_10->addWidget(scrollArea);
+
+    //connect(scrollArea->verticalScrollBar(), &QScrollBar::valueChanged, scrollArea->viewport(), scrollArea->update());
+    //connect(scrollArea->horizontalScrollBar(), &QScrollBar::valueChanged, scrollArea->viewport(), &QWidget::update);
+
     /////////////////////////////////////////////////////
     ///     //////////////////////////////////////////////////////
     ///
@@ -86,9 +121,13 @@ playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin, S
     drawPlaylists();
 }
 
+
+
 void playlist_manager::addBtnAdd() {
     AddPlaylist = new QFrame(scrollArea);
-    AddPlaylist->setMaximumSize(150, 150);
+    AddPlaylist->setMaximumSize(QSize(1500, 150));
+    AddPlaylist->setMinimumSize(QSize(150, 150));
+    //AddPlaylist->setMaximumSize(150, 150);
     AddPlaylist->setStyleSheet("background-color: rgb(39, 44, 54);\n border-radius: 15px;");
     AddPlaylist->setObjectName("AddPlaylist");
 
@@ -212,7 +251,7 @@ void playlist_manager::newPlaylist() {
 }
 
 pos* playlist_manager::getNewPos() {
-    int maxcol = 5;
+    int maxcol = 0;
     nextPos->y += 1;
     if(nextPos->y > maxcol) {
         nextPos->y = 0;

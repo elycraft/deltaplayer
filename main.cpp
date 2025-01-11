@@ -8,13 +8,26 @@
 #include "androidytdlpmanager.h"
 
 #include <QApplication>
+#include <QSurfaceFormat>
 
 int main(int argc, char *argv[])
 {
+    //QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
     QApplication a(argc, argv);
+
+    QSurfaceFormat format;
+    format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    format.setOption(QSurfaceFormat::DebugContext);
+    QSurfaceFormat::setDefaultFormat(format);
+
     MainWindowt w;
 
+
+
     SettingManager* sm = new SettingManager(&w);
+
+    androidYtdlpManager* YtdlpM = new androidYtdlpManager();
+    a.setProperty("YtdlpM", QVariant::fromValue(YtdlpM));
 
     playbar_manager *playbarM = new playbar_manager(&w, sm);
     playlist_manager *playlistM = new playlist_manager(&w, playbarM->mp,sm);
@@ -25,13 +38,19 @@ int main(int argc, char *argv[])
     exitP->addExitFunction([&playlistM](){playlistM->save();});
     exitP->addExitFunction([&sm](){sm->appExit();});
 
-    androidYtdlpManager* test = new androidYtdlpManager();
-    test->init();
-    test->get_info("https://www.youtube.com/watch?v=yYKXvpjppsE");
-
     QObject::connect(&a, &QApplication::aboutToQuit, [&exitP]() {
         exitP->appExit();  // Appel de toutes les fonctions avant de quitter
     });
+
+    QTimer *refreshTimer = new QTimer();
+    QObject::connect(refreshTimer, &QTimer::timeout, []() {
+        for (QWidget *widget : QApplication::topLevelWidgets()) {
+            widget->update(); // Force une mise à jour
+        }
+    });
+    refreshTimer->start(33); // Rafraîchissement à environ 60 FPS
+
+
     w.show();
     return a.exec();
 }

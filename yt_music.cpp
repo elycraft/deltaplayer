@@ -121,7 +121,7 @@ QString yt_music::print() {
 }
 
 QString yt_music::get_url() {
-    std::string getCommand = ytDlpPath + " --no-warnings --dump-json " + furl.toStdString();
+    std::string getCommand = furl.toStdString();
     cmdWorker* worker = new cmdWorker();
     QThread* thread = new QThread();
     QEventLoop loop;
