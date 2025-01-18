@@ -25,6 +25,7 @@ public:
     void login(QString username, QString password);
     QString getRessource(QString collection, QString recordId, QString filename);
     void uploadFile(const QString& filePath, const QString &collection, const QString& collectionName, const QString& fieldName ,const QString& authToken);
+    void createAccount(QString username, QString password,QString nameen);
 
     QJsonObject user;
     QString name;
@@ -38,6 +39,7 @@ signals:
     // Signal pour transmettre le résultat JSON
     void jsonReceived(const QJsonObject& json);
     void loginFinished();
+    void createFinished();
 
 
 

@@ -2,7 +2,7 @@
 
 apiManager::apiManager() {
     isLogIn = false;
-    apiurl = "http://127.0.0.1:8090";
+    apiurl = "https://dpapi.elydev.fr";
     connect(&networkManager, &QNetworkAccessManager::finished, this, &apiManager::onReplyFinished);
 }
 
@@ -34,11 +34,39 @@ void apiManager::login(QString username, QString password) {
 
 }
 
+void apiManager::createAccount(QString username, QString password,QString nameen) {
+    QJsonObject json;
+    json["email"] = username;
+    json["password"] = password;
+    json["passwordConfirm"] = password;
+    json["name"] = nameen;
+
+    disconnect(this, &apiManager::jsonReceived, nullptr, nullptr);
+    connect(this, &apiManager::jsonReceived, this, [this](const QJsonObject& json) {
+        qDebug() << "JSON reçu:" << json;
+
+        id = json["id"].toString();
+        if (json.contains("token")) {
+            user = json;
+
+
+
+
+        }
+        isLogIn = true;
+        emit createFinished();
+    });
+
+    // Envoyer une requête POST avec du JSON
+    sendPostRequest(apiurl+"/api/collections/users/records", json);
+
+}
+
 void apiManager::uploadFile(const QString& filePath, const QString& collection, const QString& recordId, const QString& fieldName,const QString& authToken) {
     QNetworkAccessManager* networkManagerb = new QNetworkAccessManager;
 
     // URL cible (remplace l'adresse si besoin)
-    QString url = QString("http://127.0.0.1:8090/api/collections/%1/records/%2").arg(collection,recordId);
+    QString url = QString(apiurl+"/api/collections/%1/records/%2").arg(collection,recordId);
 
     // Préparer la requête
     QNetworkRequest request((QUrl(url)));
@@ -109,6 +137,7 @@ void apiManager::sendPostRequest(const QString& url, const QJsonObject& json) {
     // Envoyer une requête POST avec le JSON
     networkManager.post(request, jsonData);
 }
+
 
 
 

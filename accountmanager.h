@@ -15,6 +15,9 @@ public:
     void goPage();
     void pushPlaylists();
     void handleLogin();
+    void handleCreateAcc();
+    void handle_noaccount();
+
 private:
     MainWindowt* window;
     apiManager* api;
