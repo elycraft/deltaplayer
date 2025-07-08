@@ -33,17 +33,21 @@ public:
     QList<playlist_item*> playlists;
     void save();
     QString ytPath;
+    QJsonArray load();
+    QJsonArray raw_playlists;
+    void reload();
+
+
+
 
 private:
     FileManager* fm;
     ImageLoader* il;
     MainWindowt* window;
     dp_audioapi* mp;
-    QJsonArray raw_playlists;
     SettingManager* sm;
 
     void addBtnAdd();
-    QJsonArray load();
     void drawPlaylists();
     void newPlaylist();
     pos* nextPos;

@@ -30,6 +30,9 @@ public:
     void updateList();
     QJsonObject save();
 
+    QFrame *PlaylistTemplate;
+
+
 
 
 
@@ -66,7 +69,6 @@ private:
     void handlerNM();
     void clearSerachList();
 
-    QFrame *PlaylistTemplate;
     QHBoxLayout *verticalLayout_13;
     QPushButton *thumb;
     QFrame *options;

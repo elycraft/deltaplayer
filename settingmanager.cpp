@@ -2,7 +2,7 @@
 #include "ui_GUI_BASE.h"
 
 SettingManager::SettingManager(MainWindowt *mainWindow) {
-    BASESETTINGS = {{"volume", 50},{"ytpath",QDir::currentPath()+"/yt-dlp.exe"}};
+    BASESETTINGS = {{"volume", 50},{"ytpath",QDir::currentPath()+"/yt-dlp.exe"},{"loginTkn",""}};
     fm = new FileManager();
     settings = load();
     window = mainWindow;

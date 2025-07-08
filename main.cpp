@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
     playbar_manager *playbarM = new playbar_manager(&w, sm);
     playlist_manager *playlistM = new playlist_manager(&w, playbarM->mp,sm);
 
-    accountManager *accountM = new accountManager(&w);
+    accountManager *accountM = new accountManager(&w,playlistM,sm);
+
 
     ExitProgram *exitP = new ExitProgram();
     exitP->addExitFunction([&playlistM](){playlistM->save();});
