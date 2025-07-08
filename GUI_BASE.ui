@@ -1568,7 +1568,7 @@ QPushButton:pressed {
                    <string notr="true">background: transparent;</string>
                   </property>
                   <property name="currentIndex">
-                   <number>6</number>
+                   <number>5</number>
                   </property>
                   <widget class="QWidget" name="page_playlists">
                    <layout class="QVBoxLayout" name="verticalLayout_10"/>
@@ -2569,6 +2569,12 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QLineEdit" name="createPseudo">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
                          <property name="placeholderText">
                           <string>Pseudo</string>
                          </property>
@@ -2576,6 +2582,12 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QLineEdit" name="createEmail">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
                          <property name="placeholderText">
                           <string>Email</string>
                          </property>
@@ -2583,6 +2595,12 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QLineEdit" name="createPass">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
                          <property name="echoMode">
                           <enum>QLineEdit::EchoMode::Password</enum>
                          </property>
@@ -2593,6 +2611,15 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QLineEdit" name="lineEdit_4">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                         <property name="echoMode">
+                          <enum>QLineEdit::EchoMode::Password</enum>
+                         </property>
                          <property name="placeholderText">
                           <string>Confirm Password</string>
                          </property>
@@ -2600,6 +2627,15 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QPushButton" name="createAcc">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color: rgb(44, 49, 60);</string>
+                         </property>
                          <property name="text">
                           <string>Register</string>
                          </property>
@@ -2708,6 +2744,12 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QLineEdit" name="loginEmail">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
                          <property name="inputMask">
                           <string/>
                          </property>
@@ -2721,6 +2763,15 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QLineEdit" name="loginPass_2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                         <property name="echoMode">
+                          <enum>QLineEdit::EchoMode::Password</enum>
+                         </property>
                          <property name="placeholderText">
                           <string>Password</string>
                          </property>
@@ -2728,6 +2779,15 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QPushButton" name="loginToAcc_2">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color: rgb(44, 49, 60);</string>
+                         </property>
                          <property name="text">
                           <string>Login</string>
                          </property>
@@ -2735,6 +2795,15 @@ border-radius: 15px;</string>
                        </item>
                        <item>
                         <widget class="QPushButton" name="goToCreateAcc">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>50</height>
+                          </size>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true">background-color: rgb(44, 49, 60);</string>
+                         </property>
                          <property name="text">
                           <string>No account ? Create one here.</string>
                          </property>
@@ -2826,14 +2895,70 @@ border-radius: 15px;</string>
                         </property>
                        </spacer>
                       </item>
+                      <item>
+                       <widget class="QPushButton" name="accountUpload">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>75</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <pointsize>20</pointsize>
+                         </font>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">background-color: rgb(44, 49, 60);</string>
+                        </property>
+                        <property name="text">
+                         <string>Upload your library</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="accountDownload">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>75</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <pointsize>20</pointsize>
+                         </font>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">background-color: rgb(44, 49, 60);</string>
+                        </property>
+                        <property name="text">
+                         <string>Download on this device</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="accountLogout">
+                        <property name="minimumSize">
+                         <size>
+                          <width>0</width>
+                          <height>75</height>
+                         </size>
+                        </property>
+                        <property name="font">
+                         <font>
+                          <pointsize>20</pointsize>
+                         </font>
+                        </property>
+                        <property name="styleSheet">
+                         <string notr="true">background-color: rgb(44, 49, 60);</string>
+                        </property>
+                        <property name="text">
+                         <string>Logout from this account</string>
+                        </property>
+                       </widget>
+                      </item>
                      </layout>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="acoounttestBut">
-                      <property name="text">
-                       <string>PushButton</string>
-                      </property>
-                     </widget>
                     </item>
                    </layout>
                   </widget>

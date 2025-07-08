@@ -1,5 +1,6 @@
 #ifndef APIMANAGER_H
 #define APIMANAGER_H
+#include "filemanager.h"
 #include <qjsondocument.h>
 #include <qjsonobject.h>
 #include <qnetworkreply.h>
@@ -26,6 +27,13 @@ public:
     QString getRessource(QString collection, QString recordId, QString filename);
     void uploadFile(const QString& filePath, const QString &collection, const QString& collectionName, const QString& fieldName ,const QString& authToken);
     void createAccount(QString username, QString password,QString nameen);
+    QString sendPatchRequest(const QString& url, const QJsonObject& json);
+    void createFilesAccount();
+    void downloadFile(const QString& url, const QString& filename);
+    void downloadFromServer();
+    void authRefresh(QString possibleToken);
+
+
 
     QJsonObject user;
     QString name;
@@ -38,8 +46,9 @@ public:
 signals:
     // Signal pour transmettre le résultat JSON
     void jsonReceived(const QJsonObject& json);
-    void loginFinished();
+    void loginFinished(bool ok);
     void createFinished();
+    void downloadFinished();
 
 
 
@@ -50,6 +59,7 @@ private slots:
 private:
     QNetworkAccessManager networkManager;
     QString apiurl;
+    FileManager* fm;
 
 
 };

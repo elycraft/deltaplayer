@@ -376,14 +376,17 @@ void playlist_item::deletePlaylist() {
     this->PlaylistTemplate->setParent(nullptr);
 
     // Changer le widget courant du stackedWidget
-    window->ui->stackedWidget->setCurrentWidget(window->ui->page_playlists);
 
     // Retirer l'élément de la liste des playlists
     auto& playlists = parent->playlists; // Assurez-vous que 'playlists' est bien défini et accessible
     playlists.removeOne(this);
 
+
     // Supprimer l'objet
+    window->ui->stackedWidget->setCurrentWidget(window->ui->page_playlists);
+
     delete this;
+
 }
 
 void playlist_item::searchAVideo() {

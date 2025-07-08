@@ -9,7 +9,7 @@
 #include "QDir"
 #include "playlist_item.h"
 #include "customlistwidget.h"
-#include "DraggableItem.h"
+#include "draggableitem.h"
 #include "settingmanager.h"
 
 class pos {
@@ -31,18 +31,23 @@ public:
     CustomListWidget *serachVL;
     QList<playlist_item*> playlists;
     void save();
+    QJsonArray load();
+    QJsonArray raw_playlists;
+
+
     QString ytPath;
+
+    void reload();
+
 
 private:
     FileManager* fm;
     ImageLoader* il;
     MainWindowt* window;
     dp_audioapi* mp;
-    QJsonArray raw_playlists;
     SettingManager* sm;
 
     void addBtnAdd();
-    QJsonArray load();
     void drawPlaylists();
     void newPlaylist();
     pos* nextPos;

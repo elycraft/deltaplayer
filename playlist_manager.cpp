@@ -211,6 +211,22 @@ void playlist_manager::newPlaylist() {
     playlists.last()->modify();
 }
 
+void playlist_manager::reload() {
+    qDebug("Reloading playlists...");
+    for (const auto& pl : playlists) {
+        pl->PlaylistTemplate->setParent(nullptr);
+        gridLayoutPlay->removeWidget(pl->PlaylistTemplate);
+
+        // Retirer l'élément de la liste des playlists
+        playlists.removeOne(pl);
+
+        // Supprimer l'objet
+        delete pl;
+    }
+    nextPos = new pos(0,0);
+    drawPlaylists();
+}
+
 pos* playlist_manager::getNewPos() {
     int maxcol = 5;
     nextPos->y += 1;
