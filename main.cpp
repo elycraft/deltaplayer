@@ -6,6 +6,7 @@
 #include "accountmanager.h"
 #include "exitprogram.h"
 #include "androidytdlpmanager.h"
+#include "androidnotification.h"
 
 #include <QApplication>
 #include <QSurfaceFormat>
@@ -28,6 +29,9 @@ int main(int argc, char *argv[])
 
     androidYtdlpManager* YtdlpM = new androidYtdlpManager();
     a.setProperty("YtdlpM", QVariant::fromValue(YtdlpM));
+
+    androidnotification* aNotif = new androidnotification();
+    a.setProperty("aNotif", QVariant::fromValue(aNotif));
 
     playbar_manager *playbarM = new playbar_manager(&w, sm);
     playlist_manager *playlistM = new playlist_manager(&w, playbarM->mp,sm);

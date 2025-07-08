@@ -1,4 +1,4 @@
-#include "SettingManager.h"
+#include "settingmanager.h"
 #include "ui_GUI_BASE.h"
 
 SettingManager::SettingManager(MainWindowt *mainWindow) {

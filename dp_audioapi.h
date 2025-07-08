@@ -13,8 +13,8 @@ public:
     dp_audioapi();
     bool isPlaying;
     bool paused;
-    yt_music * current;
-    void play(yt_music * vid);
+    yt_music* current;
+    void play(yt_music* vid);
     void setVolume(int vol);
     void stop();
     void pause();
@@ -35,7 +35,6 @@ signals:
     void hasToUpdate();
 
 private:
-
     QAudioOutput* audio;
 };
 

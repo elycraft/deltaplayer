@@ -1,4 +1,4 @@
-#include "ImageLoader.h"
+#include "imageloader.h"
 #include <QFile>
 #include <QDir>
 #include <QEventLoop>

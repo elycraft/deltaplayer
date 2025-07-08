@@ -5,7 +5,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QCryptographicHash>
-#include "FileManager.h"
+#include "filemanager.h"
 
 class ImageLoader : public QObject {
 Q_OBJECT

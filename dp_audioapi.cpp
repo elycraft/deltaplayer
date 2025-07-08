@@ -3,6 +3,7 @@
 #include "QtMultimedia/QAudioOutput"
 
 
+
 dp_audioapi::dp_audioapi() {
     isPlaying = false;
     paused = true;
@@ -10,6 +11,9 @@ dp_audioapi::dp_audioapi() {
     current = nullptr;
     player = new QMediaPlayer;
     audio = new QAudioOutput;
+
+
+
     player->setAudioOutput(audio);
     //connect(player, SIGNAL(positionChanged(qint64)), this, SLOT(positionChanged(qint64)));
     QTimer *timer = new QTimer(this);
@@ -23,6 +27,8 @@ void dp_audioapi::play(yt_music * vid) {
     paused = false;
     player->stop();
     QString url = vid->get_url();
+
+
 
     player->setSource(QUrl(url));
     player->play();

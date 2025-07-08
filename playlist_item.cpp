@@ -238,13 +238,13 @@ void playlist_item::modify() {
     for (const auto& music : musicsI) {
         QString texteametre;
         int maxcara = 60;
-        QString a = QString("    %1 - By %2").arg(music->title).arg(music->author);
+        QString a = QString(" %1 \n By %2").arg(music->title).arg(music->author);
         if (a.length() > maxcara) {
             int tm = maxcara - (a.length() - music->title.length());
             QString shortText = music->title.left(tm) + "...";
-            texteametre = QString("    %1 - By %2").arg(shortText).arg(music->author);
+            texteametre = QString(" %1 \n By %2").arg(shortText).arg(music->author);
         } else {
-            texteametre = QString("    %1 - By %2").arg(music->title).arg(music->author);
+            texteametre = QString(" %1 \n By %2").arg(music->title).arg(music->author);
         }
         //qRegisterMetaType<yt_music>("yt_music");
         // Encapsulation des données dans un QVariant contenant une QList<QVariant>
@@ -263,6 +263,7 @@ void playlist_item::modify() {
         parent->playlistEditList->addItem(item);
 
     }
+    parent->playlistEditList->adjustListWidgetHeight();
     window->ui->stackedWidget->setCurrentWidget(window->ui->page_editPlaylist);
 }
 
@@ -329,13 +330,13 @@ void playlist_item::handlerNM() {
             musicsI.append(music);
             QString texteametre;
             int maxcara = 60;
-            QString a = QString("    %1 - By %2").arg(music->title).arg(music->author);
+            QString a = QString(" %1 \n By %2").arg(music->title).arg(music->author);
             if (a.length() > maxcara) {
                 int tm = maxcara - (a.length() - music->title.length());
                 QString shortText = music->title.left(tm) + "...";
-                texteametre = QString("    %1 - By %2").arg(shortText).arg(music->author);
+                texteametre = QString(" %1 \n By %2").arg(shortText).arg(music->author);
             } else {
-                texteametre = QString("    %1 - By %2").arg(music->title).arg(music->author);
+                texteametre = QString(" %1 \n By %2").arg(music->title).arg(music->author);
             }
             //qRegisterMetaType<yt_music>("yt_music");
             // Encapsulation des données dans un QVariant contenant une QList<QVariant>
@@ -354,6 +355,7 @@ void playlist_item::handlerNM() {
             parent->playlistEditList->addItem(item);
         }
     }
+    parent->playlistEditList->adjustListWidgetHeight();
 }
 
 void playlist_item::getNewImage(QString text) {
@@ -415,6 +417,7 @@ void playlist_item::searchAVideo() {
 void playlist_item::clearSerachList() {
     parent->serachVL->clear();
     window->ui->searchEdit->setText("");
+    parent->serachVL->adjustListWidgetHeight();
 }
 
 void playlist_item::showSearch(YoutubeSearch* sh) {
@@ -434,14 +437,14 @@ void playlist_item::showSearch(YoutubeSearch* sh) {
 
 
         QString texteametre;
-        int maxcara = 60;
-        QString a = QString("    %1 - By %2").arg(tit).arg(channel);
+        int maxcara = 40;
+        QString a = QString(" %1 \n By %2").arg(tit).arg(channel);
         if (a.length() > maxcara) {
             int tm = maxcara - (a.length() - tit.length());
             QString shortText = tit.left(tm) + "...";
-            texteametre = QString("    %1 - By %2").arg(shortText).arg(channel);
+            texteametre = QString(" %1 \n By %2").arg(shortText).arg(channel);
         } else {
-            texteametre = QString("    %1 - By %2").arg(tit).arg(channel);
+            texteametre = QString(" %1 \n By %2").arg(tit).arg(channel);
         }
 
         QVariant data = QVariant::fromValue(QList<QVariant>{
@@ -457,6 +460,7 @@ void playlist_item::showSearch(YoutubeSearch* sh) {
         itembis->setData(Qt::UserRole, data);
         parent->serachVL->addItem(itembis);
     }
+    parent->serachVL->adjustListWidgetHeight();
 }
 
 void playlist_item::addNewVideo(QListWidgetItem* wo) {
@@ -475,14 +479,14 @@ void playlist_item::addNewVideo(QListWidgetItem* wo) {
         yt_music *music = new yt_music(ytPath,"",dataoo);
         musicsI.append(music);
         QString texteametre;
-        int maxcara = 60;
-        QString a = QString("    %1 - By %2").arg(music->title).arg(music->author);
+        int maxcara = 40;
+        QString a = QString(" %1 \n By %2").arg(music->title).arg(music->author);
         if (a.length() > maxcara) {
             int tm = maxcara - (a.length() - music->title.length());
             QString shortText = music->title.left(tm) + "...";
-            texteametre = QString("    %1 - By %2").arg(shortText).arg(music->author);
+            texteametre = QString(" %1 \nBy %2").arg(shortText).arg(music->author);
         } else {
-            texteametre = QString("    %1 - By %2").arg(music->title).arg(music->author);
+            texteametre = QString(" %1 \n By %2").arg(music->title).arg(music->author);
         }
         //qRegisterMetaType<yt_music>("yt_music");
         // Encapsulation des données dans un QVariant contenant une QList<QVariant>
@@ -500,6 +504,7 @@ void playlist_item::addNewVideo(QListWidgetItem* wo) {
         item->setData(Qt::UserRole, data);
         parent->playlistEditList->addItem(item);
     }
+    parent->playlistEditList->adjustListWidgetHeight();
 }
 
 void playlist_item::deleteVid(QListWidgetItem* wo) {
@@ -507,6 +512,7 @@ void playlist_item::deleteVid(QListWidgetItem* wo) {
     int row = parent->playlistEditList->row(wo);
     parent->playlistEditList->takeItem(row);
     musicsI = parent->playlistEditList->getNewList();
+    parent->playlistEditList->adjustListWidgetHeight();
 }
 
 

@@ -9,7 +9,7 @@
 #include "QDir"
 #include "playlist_item.h"
 #include "customlistwidget.h"
-#include "DraggableItem.h"
+#include "draggableitem.h"
 #include "settingmanager.h"
 #include <QScroller>
 
@@ -49,11 +49,15 @@ private:
     pos* nextPos;
 
     QScrollArea *scrollArea;
+    QScrollArea* scrollAreaNNN;
+
     QFrame *AddPlaylist;
     QWidget *scrollAreaWidgetContents;
+    QWidget* scrollAreaWidgetContentsNNN;
     QVBoxLayout *AddPlaylistLayout;
     QPushButton *btn_addplaylist;
     QGridLayout *gridLayoutPlay;
+    QVBoxLayout* bigLayout;
 
     QScrollArea *scrollAreaserachVL;
     QWidget *scrollAreaWidgetContentsserachVL;

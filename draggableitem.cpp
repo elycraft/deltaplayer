@@ -11,6 +11,11 @@ DraggableItem::DraggableItem(QString b1, QString b2, QString b3, QWidget *parent
     QString icon3 = b3;
     //QString thumbUrl = "";
 
+
+
+
+
+
     // Create the frame for the item
     nwidget = new QFrame(this);
     nwidget->setMinimumSize(QSize(0, 80));
@@ -33,6 +38,9 @@ DraggableItem::DraggableItem(QString b1, QString b2, QString b3, QWidget *parent
         QIcon playIcon;
         playIcon.addPixmap(QPixmap(icon1), QIcon::Normal, QIcon::Off);
         fbutton1->setIcon(playIcon);
+        fbutton1->setStyleSheet("background-color: rgb(19, 24, 34);"
+                                "border-radius: 15px;");
+        fbutton1->setFixedSize(75,75);
         horizontalLayout->addWidget(fbutton1);
         // Add another spacer item
         QSpacerItem *spacerItem2u = new QSpacerItem(10, 19, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -81,6 +89,9 @@ DraggableItem::DraggableItem(QString b1, QString b2, QString b3, QWidget *parent
         QIcon deleteIcon;
         deleteIcon.addPixmap(QPixmap(icon2), QIcon::Normal, QIcon::Off);
         fbutton2->setIcon(deleteIcon);
+        fbutton2->setStyleSheet("background-color: rgb(19, 24, 34);"
+                                "border-radius: 15px;");
+        fbutton2->setFixedSize(75,75);
         horizontalLayout->addWidget(fbutton2);
         // Add another spacer item
         QSpacerItem *spacerItem2ue = new QSpacerItem(10, 19, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -98,7 +109,10 @@ DraggableItem::DraggableItem(QString b1, QString b2, QString b3, QWidget *parent
         fbutton3->setText("");
         QIcon deIcon;
         deIcon.addPixmap(QPixmap(icon3), QIcon::Normal, QIcon::Off);
-        fbutton2->setIcon(deIcon);
+        fbutton3->setIcon(deIcon);
+        fbutton3->setFixedSize(75,75);
+        fbutton3->setStyleSheet("background-color: rgb(19, 24, 34);"
+                                "border-radius: 15px;");
         horizontalLayout->addWidget(fbutton3);
         // Add another spacer item
         QSpacerItem *spacerItem2uf = new QSpacerItem(10, 19, QSizePolicy::Fixed, QSizePolicy::Minimum);
@@ -137,6 +151,7 @@ void DraggableItem::setThumb(const QString &imagePath) {
     thumb->setPixmap(croppedPixmap);
     thumb->setAlignment(Qt::AlignCenter);
     */
+    if (imagePath=="") {return;}
     thumb->setStyleSheet(QString("border-radius: 2px;"
                                  "border-image: url('%1') 0 0 0 0 stretch stretch").arg(imagePath));
 }

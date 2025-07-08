@@ -22,7 +22,63 @@ playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin, S
     ytPath = sm->getSetting("ytpath").toString();
 
 
+    /// Android Add
+    /*ui->checkBox_2->setEnabled(false);
+    ui->checkBox_2->setVisible(false);
+    */
+    ui->verticalLayout_17->removeWidget(ui->serachVideoFrame);
+    ui->hLayout_15->removeWidget(ui->leftPanelEditPlaylist);
 
+    ui->hLayout_15->removeWidget(ui->rightPanelEditPlaylist);
+    //delete ui->rightPanelEditPlaylist;
+
+    // Create a QScrollArea
+    scrollAreaNNN = new QScrollArea(ui->page_editPlaylist);
+    scrollAreaNNN->setWidgetResizable(true);
+    scrollAreaNNN->setStyleSheet("border-radius: 0px;");
+    scrollAreaNNN->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
+
+    scrollAreaWidgetContentsNNN = new QWidget();
+    scrollAreaWidgetContentsNNN->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    scrollAreaWidgetContentsNNN->setAttribute(Qt::WA_AcceptTouchEvents);
+    //scrollAreaWidgetContents->setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents, false);
+    //scrollAreaWidgetContentsNNN->setStyleSheet("background-color: red; border: 2px solid black;");
+
+
+    bigLayout = new QVBoxLayout(scrollAreaWidgetContentsNNN);
+    bigLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
+
+    scrollAreaNNN->setWidget(scrollAreaWidgetContentsNNN);
+
+
+    QScroller* scrollerNNN = QScroller::scroller(scrollAreaWidgetContentsNNN); // Utilisation de la méthode statique scroller()
+    if (scrollerNNN) {
+        //scroller->grabGesture(scrollAreaWidgetContents);
+        scrollerNNN->grabGesture(scrollAreaNNN->viewport(), QScroller::LeftMouseButtonGesture);
+        // Configuration optionnelle du QScroller
+        QScrollerProperties properties = scrollerNNN->scrollerProperties();
+        properties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, QScrollerProperties::OvershootAlwaysOff);
+        properties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QScrollerProperties::OvershootAlwaysOff);
+        properties.setScrollMetric(QScrollerProperties::DecelerationFactor, 0.5); // Ajuster la décélération
+        properties.setScrollMetric(QScrollerProperties::FrameRate, QScrollerProperties::Fps60);
+        scrollerNNN->setScrollerProperties(properties);
+
+        qDebug() << "QScroller activé";
+        qDebug() << "scrollAreaWidgetContents size:" << scrollAreaWidgetContentsNNN->size();
+        qDebug() << "scrollArea viewport size:" << scrollAreaNNN->viewport()->size();
+    } else {
+        qDebug() << "QScroller non supporté sur cette plateforme";
+        // Gestion alternative si QScroller n'est pas supporté
+    }
+
+    //Important pour le fonctionnement du QScroller
+    scrollAreaNNN->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollAreaNNN->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->hLayout_15->addWidget(scrollAreaNNN);
+
+    bigLayout->addWidget(ui->leftPanelEditPlaylist);
+    bigLayout->addWidget(ui->serachVideoFrame);
 
 
 
@@ -30,13 +86,18 @@ playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin, S
     playlistEditList = new CustomListWidget(ui->verticalFrame1);
     playlistEditList->setDragDropMode(QAbstractItemView::InternalMove);
     playlistEditList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    playlistEditList->setMaximumSize(1000000,1000000);
+    playlistEditList->setSizeAdjustPolicy(CustomListWidget::SizeAdjustPolicy::AdjustToContents);
 
     // Set stylesheet and object name
     playlistEditList->setStyleSheet("border: 0px");
     playlistEditList->setObjectName("playlistEditList");
 
+    playlistEditList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    playlistEditList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     // Add CustomListWidget to the vertical layout
-    ui->verticalLayout_17->addWidget(playlistEditList);
+    bigLayout->addWidget(playlistEditList);
 
     // Create a QScrollArea
     scrollArea = new QScrollArea(ui->page_playlists);
@@ -89,17 +150,23 @@ playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin, S
     ///
 
     serachVL = new CustomListWidget(ui->serachVideoFrame);
-    serachVL->setDragDropMode(QAbstractItemView::InternalMove);
-    serachVL->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    //serachVL->setDragDropMode(QAbstractItemView::InternalMove);
+    //serachVL->setSelectionMode(QAbstractItemView::ExtendedSelection);
     serachVL->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    serachVL->setMaximumSize(1000000,1000000);
+    serachVL->setSizeAdjustPolicy(CustomListWidget::SizeAdjustPolicy::AdjustToContents);
 
     // Set stylesheet and object name
     serachVL->setStyleSheet("border: 0px; background: transparent");
-    serachVL->setObjectName("playlistEditList");
+    serachVL->setObjectName("serachPlaylistEditList");
+
+    serachVL->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    serachVL->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     // Add CustomListWidget to the vertical layout
     ui->verticalLayout_21->addWidget(serachVL);
 
+    /*
     // Create a QScrollArea
     scrollAreaserachVL = new QScrollArea(serachVL);
     scrollAreaserachVL->setWidgetResizable(true);
@@ -109,7 +176,7 @@ playlist_manager::playlist_manager(MainWindowt* mainWindow, dp_audioapi* mpin, S
     scrollAreaserachVL->setWidget(scrollAreaWidgetContentsserachVL);
 
     //ui->verticalLayout_10->addWidget(scrollAreaserachVL);  // A CORIGE
-
+    */
     /////////////////////////////////////////////////////
 
 

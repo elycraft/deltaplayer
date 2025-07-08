@@ -11,6 +11,7 @@
 #include "QVBoxLayout"
 #include "QPushButton"
 #include "settingmanager.h"
+#include "androidnotification.h"
 
 
 
@@ -40,6 +41,7 @@ private:
     ImageLoader* il;
     SettingManager* sm;
 
+    androidnotification* aNotif;
 
 
 };

@@ -29,6 +29,12 @@ playbar_manager::playbar_manager(MainWindowt* mainWindow, SettingManager *smin) 
     il = new ImageLoader();
     sm = smin;
 
+    aNotif = qApp->property("aNotif").value<androidnotification*>();
+    connect(aNotif,&androidnotification::play,this,&playbar_manager::btnPause);
+    connect(aNotif,&androidnotification::pause,this,&playbar_manager::btnPause);
+    connect(aNotif,&androidnotification::forward,this,&playbar_manager::btnSkip);
+    connect(aNotif,&androidnotification::back,this,&playbar_manager::btnRewind);
+
 
     connect(ui->btn_pause, &QPushButton::clicked, this, &playbar_manager::btnPause);
     connect(ui->btn_rewind, &QPushButton::clicked, this, &playbar_manager::btnRewind);
@@ -83,6 +89,10 @@ void playbar_manager::update_ui() {
         QString image = il->get(mp->current->thumb);
         QString ss = QString("border-radius: 15px;\nborder-image: url(%1) 50 50 50 50").arg(image);
         window->ui->MusicPoster->setStyleSheet(ss);
+
+        aNotif->creerNotificationMultimedia(mp->current->thumb, mp->current->title, mp->current->author);
+
+
     }
 
     if (mp->paused) {

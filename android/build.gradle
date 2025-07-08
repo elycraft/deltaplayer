@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.1'
+        classpath 'com.android.tools.build:gradle:8.3.1'
 
     }
 }
@@ -19,12 +19,51 @@ apply plugin: 'com.android.application'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+
     implementation 'androidx.core:core:1.13.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'org.apache.commons:commons-compress:1.12'
 
+    // Ajoutez ces dépendances pour les notifications multimédias
+    implementation 'androidx.media:media:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.annotation:annotation:1.6.0'
+    //implementation 'androidx.media2:media2-session:1.2.1'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // Forcez l'utilisation d'une seule version de Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22"
+
+/*
+    configurations.all {
+            resolutionStrategy {
+                // Force les versions spécifiques pour éviter les conflits
+                force 'androidx.core:core:1.13.1'
+                force 'androidx.appcompat:appcompat:1.6.1'
+                force 'androidx.annotation:annotation:1.6.0'
+                force 'androidx.media:media:1.7.0' // Force explicitement cette version
+
+                // Détecte et remplace les anciennes dépendances 'com.android.support'
+                // par leurs équivalents AndroidX, au cas où une bibliothèque tierce les introduirait.
+                eachDependency { DependencyResolveDetails details ->
+                    def requested = details.getRequested()
+                    if (requested.group == 'com.android.support' && !requested.name.contains('multidex')) { // Exclure multidex si présent et non problématique
+                        def newGroup = 'androidx.' + requested.name.split('-')[0] // 'support' -> 'androidx.support'
+                        def newName = requested.name.substring(requested.name.indexOf('-') + 1) // 'v4' -> 'core' (pas toujours simple, mais un bon début)
+
+                        // Une approche plus directe est de simplement ignorer si elles ne sont pas nécessaires
+                        // OU de tenter une correspondance directe pour les plus courantes.
+                        // Pour l'instant, la "force" ci-dessus est plus directe.
+                        // Si le problème persiste, on pourra revenir à une exclusion plus agressive ici.
+                    }
+                }
+            }
+        }
+        */
 }
+
 
 android {
     /*******************************************************
@@ -87,5 +126,33 @@ android {
         minSdkVersion qtMinSdkVersion
         targetSdkVersion qtTargetSdkVersion
         ndk.abiFilters = qtTargetAbiList.split(",")
+    }
+}
+
+
+// --- IMPORTANT : AJOUTE CE BLOC EN DEHORS DE 'dependencies {}', IDÉALEMENT APRÈS LE BLOC 'android {}' ---
+configurations.all {
+    resolutionStrategy {
+        // Force l'utilisation de versions spécifiques pour les bibliothèques critiques.
+        // Cela empêche Gradle de tirer une version plus ancienne ou incompatible
+        // si une autre dépendance la requiert.
+        force 'androidx.core:core:1.13.1'
+        force 'androidx.appcompat:appcompat:1.6.1'
+        force 'androidx.annotation:annotation:1.6.0'
+        force 'androidx.media:media:1.7.0' // Force explicitement cette version
+
+        // Logique pour exclure proactivement les anciennes bibliothèques de support si elles apparaissent.
+        // Cela peut aider à prévenir les conflits de classes internes.
+        eachDependency { DependencyResolveDetails details ->
+            def requested = details.getRequested()
+            if (requested.group == 'com.android.support') {
+                // C'est une stratégie agressive pour bloquer toutes les dépendances 'com.android.support'.
+                // Utilise-la avec prudence, mais elle est souvent nécessaire pour ce type de bug.
+                details.useTarget("com.android.support:support-compat:28.0.0") // Une version obsolète, pour la remplacer
+                details.because "Force exclusion of old support libraries."
+                details.useVersion "28.0.0" // Une version obsolète, pour forcer la non-utilisation
+                details.force() // Assure que la force est appliquée
+            }
+        }
     }
 }

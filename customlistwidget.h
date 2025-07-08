@@ -48,10 +48,12 @@ public:
     QList<yt_music*> getNewList();
     void deleteMe(QListWidgetItem *item);
     //void addListener(std::function<void()> fct, std::function<void(QListWidgetItem*)> fct2);
-    //void removeListener();
+    //void removeListener();*
+    void adjustListWidgetHeight();
     void button1(QListWidgetItem *item);
     void button2(QListWidgetItem *item);
     void button3(QListWidgetItem *item);
+    bool canMove = true;
 
 private:
     QWidget *wid;

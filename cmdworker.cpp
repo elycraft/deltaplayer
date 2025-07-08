@@ -5,7 +5,7 @@ cmdWorker::cmdWorker() {
 }
 
 std::wstring cmdWorker::stringToWstring(const std::string& str) {
-
+    return std::wstring();
 }
 
 void cmdWorker::execAndCaptureOutput(const std::string& cmd) {

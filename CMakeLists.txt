@@ -51,6 +51,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         accountmanager.h accountmanager.cpp
         android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
         androidytdlpmanager.h androidytdlpmanager.cpp
+        android/src/MediaNotification.java
+        androidnotification.h androidnotification.cpp
+        android/src/AndroidUtils.java
+        android/src/MediaPlayerService.java
+        GUI_BASE_old.ui
+
 
 
 

@@ -1,4 +1,4 @@
-#include "CustomListWidget.h"
+#include "customlistwidget.h"
 #include <QDragMoveEvent>
 
 #include <QListWidgetItem>
@@ -58,6 +58,8 @@ void CustomListWidget::handleRowsInserted(const QModelIndex &parent, int first, 
 }
 
 void CustomListWidget::dragMoveEvent(QDragMoveEvent *event) {
+    if (!canMove) {event->ignore();}
+
     int target = row(itemAt(event->position().toPoint()));
     int current = currentRow();
 
@@ -94,3 +96,20 @@ void CustomListWidget::button3(QListWidgetItem *item) {
     emit this->OnButton3(item);
 
 }
+
+void CustomListWidget::adjustListWidgetHeight() {
+    int totalHeight = 0;
+
+    int count = this->count();
+    for (int i = 0; i < count; ++i) {
+        totalHeight += this->sizeHintForRow(i);
+    }
+
+    // Ajouter un petit padding pour les bordures internes
+    totalHeight += 2 * this->frameWidth();
+
+    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setFixedHeight(totalHeight);
+}
+
